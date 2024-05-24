@@ -39,6 +39,7 @@ func main() {
 		panic(fmt.Errorf("unknown mode: %s, supported modes: OnlyInboth, onlyInFirst, all ", *mode))
 	}
 
+	log.Printf("Sander")
 	if *outputJson {
 		fmt.Println(string(newD.GetJSON()))
 	} else {
