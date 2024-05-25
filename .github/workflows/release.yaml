@@ -15,15 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arc: [amd64, arm]
+        arch: [amd64, arm]
         os: [darwin, windows, linux, freebsd]
     steps:
       - uses: actions/checkout@v4
       - uses: wangyoucao577/go-release-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: linux
-          goarch: amd64
+          goos: ${{ matrix.os }}
+          goarch: ${{ matrix.arch }}
           multi_binaries: true
           overwrite: true
           project_path: ./...
+          sha256sum: true
