@@ -1,4 +1,4 @@
-# Github actions
+# Github Workflows
 
 
 ## Locally testing github actions
