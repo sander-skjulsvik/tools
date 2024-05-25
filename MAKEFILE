@@ -1,0 +1,5 @@
+actions:
+	act
+
+win-build:
+	go build -o bin\\ .\\...
