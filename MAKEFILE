@@ -3,3 +3,7 @@ actions:
 
 win-build:
 	go build -o bin\\ .\\...
+
+
+win-deps:
+	choco install golangci-lint act-cli
