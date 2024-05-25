@@ -16,8 +16,7 @@ jobs:
     strategy:
       matrix:
         arc: [amd64, arm]
-        # os: [darwin, windows, linux, freebsd]
-        os: [linux, freebsd]
+        os: [darwin, windows, linux, freebsd]
     steps:
       - uses: actions/checkout@v4
       - uses: wangyoucao577/go-release-action@v1
