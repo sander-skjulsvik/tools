@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/sander-skjulsvik/tools/dupes/lib/common"
-	producerconsumer "github.com/sander-skjulsvik/tools/dupes/lib/producerConsumer"
-	"github.com/sander-skjulsvik/tools/dupes/lib/singleThread"
 	comparedirs "github.com/sander-skjulsvik/tools/dupesCompareDirs/lib"
-	"github.com/sander-skjulsvik/tools/libs/progressbar"
+	dupescomparedirs "github.com/sander-skjulsvik/tools/dupesCompareDirs/lib"
 )
 
 func main() {
@@ -26,40 +23,13 @@ func main() {
 	log.Printf("Comparing directories: %s and %s\n", *dir1, *dir2)
 
 	// Progress bar
-	var pbCollection progressbar.ProgressBarCollection
-	switch *withProgressBar {
-	case true:
-		pbCollection = progressbar.NewUiPCollection()
-	case false:
-		pbCollection = progressbar.ProgressBarCollectionMoc{}
-	}
+	pbCollection := dupescomparedirs.SelectProgressBarCollection(*withProgressBar)
 
 	// Comparison mode
-	var comparatorFunc comparedirs.ComparisonFunc
-	switch *compMode {
-	// Show dupes that is present in both directories
-	case "OnlyInboth":
-		comparatorFunc = comparedirs.OnlyInAll
-	// Show dupes that is only present in first
-	case "onlyInFirst":
-		comparatorFunc = comparedirs.OnlyInFirst
-
-	case "all":
-		comparatorFunc = comparedirs.All
-	default:
-		panic(fmt.Errorf("unknown mode: %s, supported modes: OnlyInboth, onlyInFirst, all ", *compMode))
-	}
+	comparatorFunc := comparedirs.SelectComparatorFunc(*compMode)
 
 	// Runner
-	var runFunc common.Run
-	switch *runnerMode {
-	case "singleThread":
-		runFunc = singleThread.Run
-	case "producerConsumer":
-		runFunc = producerconsumer.Run
-	case "nThreads":
-		runFunc = producerconsumer.GetRunNThreads(*nThreads)
-	}
+	runFunc := dupescomparedirs.SelectRunnerFunction(*runnerMode, *nThreads)
 
 	comparator := comparedirs.NewComparator(
 		[]string{*dir1, *dir2}, runFunc, comparatorFunc, pbCollection,
