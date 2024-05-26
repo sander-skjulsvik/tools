@@ -195,7 +195,7 @@ func runComparison(rootPath string, compFunc comparedirs.ComparisonFunc) *common
 			filepath.Join(rootPath, "d2"),
 		},
 		singleThread.Run,
-		comparedirs.OnlyInAll,
+		compFunc,
 		progressbar.ProgressBarCollectionMoc{},
 	)
 	return comparator.Run()
@@ -203,7 +203,6 @@ func runComparison(rootPath string, compFunc comparedirs.ComparisonFunc) *common
 
 // OnlyInAll returns dupes that is present in All directories
 func TestOnlyInAll(t *testing.T) {
-
 	rootPath := "test_only_in_all"
 	d1, d2 := setup(rootPath)
 	defer cleanUp(rootPath)

@@ -14,6 +14,9 @@ type ComparisonFunc func([]*common.Dupes) *common.Dupes
 
 // OnlyInAll returns dupes that is present in all directories
 func OnlyInAll(inDupes []*common.Dupes) *common.Dupes {
+	if len(inDupes) == 0 {
+		panic(fmt.Errorf("onlyInAll was given empty inDupes"))
+	}
 	outDupes := common.NewDupes()
 	outDupes.AppendDupes(inDupes[0])
 	for _, d := range inDupes[1:] {
@@ -25,6 +28,9 @@ func OnlyInAll(inDupes []*common.Dupes) *common.Dupes {
 
 // OnlyInFirst returns dupes that is only present in first directory
 func OnlyInFirst(inDupes []*common.Dupes) *common.Dupes {
+	if len(inDupes) == 0 {
+		panic(fmt.Errorf("onlyInFirst was given empty inDupes"))
+	}
 	outDupes := common.NewDupes()
 	outDupes.AppendDupes(inDupes[0])
 	for _, d := range inDupes[1:] {
@@ -35,6 +41,9 @@ func OnlyInFirst(inDupes []*common.Dupes) *common.Dupes {
 
 // All returns all dupes in all directories
 func All(inDupes []*common.Dupes) *common.Dupes {
+	if len(inDupes) == 0 {
+		panic(fmt.Errorf("all was given empty inDupes"))
+	}
 	outDupes := common.NewDupes()
 	for _, dupe := range inDupes {
 		outDupes.AppendDupes(dupe)
@@ -54,7 +63,7 @@ func NewComparator(paths []string, runFunc common.Run, compFunc ComparisonFunc, 
 	for _, path := range paths {
 		size, err := files.GetNumbeSizeOfDirMb(path)
 		if err != nil {
-			panic(fmt.Errorf("Unable to get size of file: %s, %w", path, err))
+			panic(fmt.Errorf("unable to get size of file: %s, %w", path, err))
 		}
 		runners = append(runners, common.NewRunner(
 			runFunc,
@@ -66,6 +75,7 @@ func NewComparator(paths []string, runFunc common.Run, compFunc ComparisonFunc, 
 		DupesRunners:          runners,
 		CompFunc:              compFunc,
 		ProgressBarCollection: barCollection,
+		paths:                 paths,
 	}
 }
 
