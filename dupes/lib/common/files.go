@@ -19,13 +19,6 @@ func HashString(b []byte) string {
 	return hex.EncodeToString(b)
 }
 
-func IsFile(f os.FileInfo) bool {
-	if f == nil {
-		panic(fmt.Errorf("file info is nil"))
-	}
-	return f.Mode().IsRegular()
-}
-
 func HashFile(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {

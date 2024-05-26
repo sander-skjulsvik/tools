@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
-	"github.com/sander-skjulsvik/tools/libs/files"
 	"github.com/sander-skjulsvik/tools/libs/progressbar"
 )
 
@@ -61,13 +60,9 @@ type Comparator struct {
 func NewComparator(paths []string, runFunc common.Run, compFunc ComparisonFunc, barCollection progressbar.ProgressBarCollection) *Comparator {
 	runners := []*common.Runner{}
 	for _, path := range paths {
-		size, err := files.GetNumbeSizeOfDirMb(path)
-		if err != nil {
-			panic(fmt.Errorf("unable to get size of file: %s, %w", path, err))
-		}
 		runners = append(runners, common.NewRunner(
 			runFunc,
-			barCollection.AddBar(path, size),
+			barCollection.AddDirectorySizeBar(path),
 		))
 	}
 

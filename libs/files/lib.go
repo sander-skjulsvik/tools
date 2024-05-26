@@ -3,9 +3,9 @@ package files
 import (
 	"fmt"
 	"io/fs"
+	"log"
+	"os"
 	"path/filepath"
-
-	"github.com/sander-skjulsvik/tools/dupes/lib/common"
 )
 
 func GetNumberOfFiles(path string) (int, error) {
@@ -13,7 +13,7 @@ func GetNumberOfFiles(path string) (int, error) {
 	err := filepath.Walk(
 		path,
 		func(path string, info fs.FileInfo, err error) error {
-			isFile := common.IsFile(info)
+			isFile := IsFile(info)
 			if !isFile {
 				return nil
 			}
@@ -27,15 +27,23 @@ func GetNumberOfFiles(path string) (int, error) {
 	return n, nil
 }
 
-func GetNumbeSizeOfDirMb(path string) (int, error) {
+func IsFile(f os.FileInfo) bool {
+	if f == nil {
+		panic(fmt.Errorf("file info is nil"))
+	}
+	return f.Mode().IsRegular()
+}
+
+func GetSizeOfDirMb(path string) (int, error) {
 	var size int64 = 0
 	err := filepath.Walk(
 		path,
 		func(path string, info fs.FileInfo, err error) error {
 			if info == nil {
-				panic(fmt.Errorf("GetNumbeSizeOfDirMb: fileinfo is nil for: %s", path))
+				log.Printf("File info is nil for %s\n", path)
+				return nil
 			}
-			isFile := common.IsFile(info)
+			isFile := IsFile(info)
 			if !isFile {
 				return nil
 			}

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
+	"github.com/sander-skjulsvik/tools/libs/files"
 	"github.com/sander-skjulsvik/tools/libs/progressbar"
 )
 
@@ -15,7 +16,7 @@ func Run(src string, bar progressbar.ProgressBar) *common.Dupes {
 	}
 
 	err := filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
-		isFile := common.IsFile(info)
+		isFile := files.IsFile(info)
 		if !isFile {
 			return nil
 		}

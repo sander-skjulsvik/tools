@@ -2,10 +2,12 @@ package progressbar
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	uiprogress "github.com/gosuri/uiprogress"
+	"github.com/sander-skjulsvik/tools/libs/files"
 )
 
 // ///////////////////////////////////
@@ -24,6 +26,8 @@ type ProgressBarCollection interface {
 	Stop()
 	// header, size
 	AddBar(string, int) ProgressBar
+	// path
+	AddDirectorySizeBar(string) ProgressBar
 }
 
 // ///////////////////////////////////
@@ -48,6 +52,10 @@ func NewMocProgressBarCollection() ProgressBarCollectionMoc {
 }
 
 func (pbs ProgressBarCollectionMoc) AddBar(name string, total int) ProgressBar {
+	return ProgressBarMoc{}
+}
+
+func (pbs ProgressBarCollectionMoc) AddDirectorySizeBar(path string) ProgressBar {
 	return ProgressBarMoc{}
 }
 
@@ -101,6 +109,15 @@ func (uiP UiPCollection) AddBar(name string, total int) ProgressBar {
 	}
 	uiP.bars.bars = append(uiP.bars.bars, &newBar)
 	return newBar
+}
+
+func (uiP UiPCollection) AddDirectorySizeBar(path string) ProgressBar {
+	log.Printf("Getting size of dir for bar: %s", path)
+	dirSize, err := files.GetSizeOfDirMb(path)
+	if err != nil {
+		panic(fmt.Errorf("unable to determine directory size: %w", err))
+	}
+	return uiP.AddBar(path, dirSize)
 }
 
 func (uiP UiPCollection) Start() {
