@@ -17,11 +17,17 @@ func main() {
 		method           string
 		path             string
 		presentOnlyDupes bool
+		useProgressBar   bool
+		presentJson      bool
+		nThreads         int
 	)
 
-	flag.StringVar(&method, "method", "single", "Method (single or producerConsumer)")
+	flag.StringVar(&method, "method", "single", "Method (single, producerConsumer or nThreads)")
+	flag.IntVar(&nThreads, "nThreads", 0, "Number of threads to use, ignored unless nThreads method is chosen")
 	flag.StringVar(&path, "path", ".", "File path")
 	flag.BoolVar(&presentOnlyDupes, "onlyDupes", true, "Only present dupes")
+	flag.BoolVar(&presentJson, "json", false, "present json")
+	flag.BoolVar(&useProgressBar, "progressBar", false, "Present a progress bar?")
 
 	// Parse the command-line arguments
 	flag.Parse()
@@ -40,16 +46,45 @@ func main() {
 	fmt.Printf("Path: %s\n", path)
 	fmt.Printf("PresentOnlyDupes: %t\n", presentOnlyDupes)
 
-	Run(path, method, presentOnlyDupes)
-}
-
-func Run(path, method string, presentOnlyDupes bool) {
-	var dupes *common.Dupes
+	var runFunc common.Run
 	switch {
 	case method == "single":
-		dupes = singleThread.Run(path, progressbar.ProgressBarMoc{})
-	case method == "producerconsumer":
-		dupes = producerConsumer.Run(path, progressbar.ProgressBarMoc{})
+		runFunc = singleThread.Run
+	case method == "producerConsumer":
+		runFunc = producerConsumer.Run
+	case method == "nThreads":
+		runFunc = producerConsumer.GetRunNThreads(nThreads)
 	}
-	dupes.Present(presentOnlyDupes)
+
+	var bar progressbar.ProgressBar
+	switch useProgressBar {
+	case true:
+		bar = progressbar.UiProgressBar{}
+	}
+
+	dupes := NewRunner(runFunc, bar).Run(path)
+	switch presentOnlyDupes {
+	case true:
+		dupes.GetOnlyDupes().Present(presentJson)
+	case false:
+		dupes.Present(presentJson)
+	}
+
+}
+
+type Runner struct {
+	RunFunc     common.Run
+	ProgressBar progressbar.ProgressBar
+	OutputJson  bool
+}
+
+func NewRunner(runFunc common.Run, bar progressbar.ProgressBar) *Runner {
+	return &Runner{
+		RunFunc:     runFunc,
+		ProgressBar: bar,
+	}
+}
+
+func (r *Runner) Run(path string) *common.Dupes {
+	return r.RunFunc(path, r.ProgressBar)
 }
