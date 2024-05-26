@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Define command-line flags
-	compMode := flag.String("mode", "all", "Mode to run in, modes: OnlyInboth, onlyInFirst, all")
+	compMode := flag.String("mode", "", "Mode to run in, modes: onlyInboth, onlyInFirst, all")
 	runnerMode := flag.String("runMode", "singleThread", "possible run modes: singleThread, producerConsumer and nThreads")
 	nThreads := flag.Int("nThreads", 0, "number of threads to use, only used witt runMode nThreads")
 	outputJson := flag.Bool("json", false, "If set to true Output as json")
@@ -20,6 +20,19 @@ func main() {
 	dir2 := flag.String("dir2", "", "Path to 2nd dir")
 	flag.Parse()
 
+	errString := ""
+	if *dir1 == "" || *dir2 == "" {
+		errString = "Please provide `-dir1 <path>` and `-dir2 <path>`\n" + errString
+	}
+	if *compMode == "" {
+		errString = "Please provide `-mode <onlyInBoth|onlyInFirst|all>` flag\n" + errString
+	}
+	if *compMode == "nThreads" && *nThreads == 0 {
+		errString = "If `-mode nThreads` please provide `-nThreads <number of threads>\n" + errString
+	}
+	if errString != "" {
+		panic(fmt.Errorf("failed to start, error with cli flags\n%s", errString))
+	}
 	log.Printf("Comparing directories: %s and %s\n", *dir1, *dir2)
 
 	// Progress bar

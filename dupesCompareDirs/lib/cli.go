@@ -73,7 +73,7 @@ func SelectComparatorFunc(s string) ComparisonFunc {
 	var comparatorFunc ComparisonFunc
 	switch s {
 	// Show dupes that is present in both directories
-	case "OnlyInboth":
+	case "onlyInBoth":
 		comparatorFunc = OnlyInAll
 	// Show dupes that is only present in first
 	case "onlyInFirst":
