@@ -9,6 +9,7 @@ import (
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
 	producerConsumer "github.com/sander-skjulsvik/tools/dupes/lib/producerConsumer"
 	singleThread "github.com/sander-skjulsvik/tools/dupes/lib/singleThread"
+	"github.com/sander-skjulsvik/tools/libs/progressbar"
 )
 
 func main() {
@@ -46,9 +47,9 @@ func Run(path, method string, presentOnlyDupes bool) {
 	var dupes *common.Dupes
 	switch {
 	case method == "single":
-		dupes = singleThread.Run(path)
+		dupes = singleThread.Run(path, progressbar.ProgressBarMoc{})
 	case method == "producerconsumer":
-		dupes = producerConsumer.Run(path)
+		dupes = producerConsumer.Run(path, progressbar.ProgressBarMoc{})
 	}
 	dupes.Present(presentOnlyDupes)
 }

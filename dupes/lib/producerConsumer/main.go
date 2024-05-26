@@ -7,9 +7,10 @@ import (
 	"sync"
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
+	"github.com/sander-skjulsvik/tools/libs/progressbar"
 )
 
-// Works like a generator, yelding all regular files
+// Works like a generator, yielding all regular files
 func getFiles(root string, filePaths chan<- string) {
 	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -37,17 +38,16 @@ func appendFileTreadSafe(dupes *common.Dupes, path string, lock *sync.Mutex) {
 	// dupes.ProgressBar.Add1()
 }
 
-func ProcessFiles(filePaths <-chan string) *common.Dupes {
+func ProcessFiles(filePaths <-chan string, bar progressbar.ProgressBar) *common.Dupes {
 	dupes := common.NewDupes()
 	wg := sync.WaitGroup{}
 	dupesWl := sync.Mutex{}
-	// if chans.IsClosed(filePaths) {
-	// 	log.Fatalln("Chan closed before managed to access it 1")
-	// }
+
 	for filePath := range filePaths {
 		wg.Add(1)
 		go func(fp string) {
 			appendFileTreadSafe(&dupes, fp, &dupesWl)
+			bar.AddFileSize(filePath)
 			wg.Done()
 		}(filePath)
 	}
@@ -55,7 +55,7 @@ func ProcessFiles(filePaths <-chan string) *common.Dupes {
 	return &dupes
 }
 
-func ProcessFilesNCunsumers(filePaths <-chan string, numberOfConsumers int, doneWg *sync.WaitGroup) *common.Dupes {
+func ProcessFilesNConsumers(filePaths <-chan string, numberOfConsumers int, bar progressbar.ProgressBar) *common.Dupes {
 	dupes := common.NewDupes()
 	wg := sync.WaitGroup{}
 	dupesWl := sync.Mutex{}
@@ -64,20 +64,26 @@ func ProcessFilesNCunsumers(filePaths <-chan string, numberOfConsumers int, done
 		go func() {
 			for filePath := range filePaths {
 				appendFileTreadSafe(&dupes, filePath, &dupesWl)
+				bar.AddFileSize(filePath)
 			}
 			wg.Done()
 		}()
 	}
 	wg.Wait()
-	doneWg.Done()
 	return &dupes
 }
 
-func Run(path string) *common.Dupes {
+func Run(path string, bar progressbar.ProgressBar) *common.Dupes {
 	filePaths := make(chan string)
 	go getFiles(path, filePaths)
-	// sleep 10 seconds
-	dupes := ProcessFiles(filePaths)
-	// storer(files)
+	dupes := ProcessFiles(filePaths, bar)
 	return dupes
+}
+
+func GetRunNThreads(n int) common.Run {
+	return func(path string, bar progressbar.ProgressBar) *common.Dupes {
+		filePaths := make(chan string)
+		go getFiles(path, filePaths)
+		return ProcessFilesNConsumers(filePaths, n, bar)
+	}
 }

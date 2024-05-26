@@ -11,6 +11,7 @@ import (
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
 	"github.com/sander-skjulsvik/tools/dupes/lib/test"
+	"github.com/sander-skjulsvik/tools/libs/progressbar"
 	"gotest.tools/assert"
 )
 
@@ -275,7 +276,7 @@ func TestProcessFiles(t *testing.T) {
 		var d *common.Dupes
 		wg.Add(1)
 		go func() {
-			d = ProcessFiles(filePaths)
+			d = ProcessFiles(filePaths, progressbar.ProgressBarMoc{})
 			wg.Done()
 		}()
 		filePaths <- filepath.Clean(path)
@@ -331,7 +332,7 @@ func TestProcessFiles(t *testing.T) {
 		var d *common.Dupes
 		wg.Add(1)
 		go func() {
-			d = ProcessFiles(filePaths)
+			d = ProcessFiles(filePaths, progressbar.ProgressBarMoc{})
 			wg.Done()
 		}()
 		wgAdd := sync.WaitGroup{}
@@ -392,7 +393,7 @@ func TestProcessFilesNConsumers(t *testing.T) {
 		doneWg := sync.WaitGroup{}
 		doneWg.Add(1)
 		go func() {
-			d = ProcessFilesNCunsumers(filePaths, 3, &doneWg)
+			d = ProcessFilesNConsumers(filePaths, 3, progressbar.ProgressBarMoc{})
 			wg.Done()
 		}()
 		filePaths <- filepath.Clean(path)
@@ -450,7 +451,7 @@ func TestProcessFilesNConsumers(t *testing.T) {
 		doneWg := sync.WaitGroup{}
 		doneWg.Add(1)
 		go func() {
-			d = ProcessFilesNCunsumers(filePaths, 3, &doneWg)
+			d = ProcessFilesNConsumers(filePaths, 3, progressbar.ProgressBarMoc{})
 			wg.Done()
 		}()
 		wgAdd := sync.WaitGroup{}

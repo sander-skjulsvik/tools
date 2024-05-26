@@ -9,6 +9,7 @@ import (
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
 	"github.com/sander-skjulsvik/tools/libs/collections"
+	"github.com/sander-skjulsvik/tools/libs/progressbar"
 )
 
 func TestRun(path string, run common.Run, t *testing.T) {
@@ -17,7 +18,7 @@ func TestRun(path string, run common.Run, t *testing.T) {
 	// Setup the expected dupes
 	SetupExpectedDupes(path)
 	// Run the run function to find the dupes
-	calculatedDupes := run(path)
+	calculatedDupes := run(path, progressbar.ProgressBarMoc{})
 	// Check if the expected dupes are found
 	CheckExpectedDupes(GetExpectedDupes(path), *calculatedDupes, t)
 }
@@ -65,7 +66,7 @@ func TestRunManyFiles(path string, run common.Run, t *testing.T) {
 	GenerateNestedStructure(baseDir, numLevels, numFoldersPerLevel, numFilesPerFolder, content)
 
 	fmt.Println("Nested folder structure generated successfully.")
-	run(baseDir)
+	run(baseDir, progressbar.ProgressBarMoc{})
 	fmt.Printf("Done running! \n")
 }
 

@@ -14,9 +14,7 @@ import (
 
 // Run is the main function to run for consumers of this lib.
 // First arg is the path to the folder,
-type Run func(string) *Dupes
-
-type RunWithProgressBar func(string, *progressbar.ProgressBar) *Dupes
+type Run func(string, progressbar.ProgressBar) *Dupes
 
 type File struct {
 	Path string

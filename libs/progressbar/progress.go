@@ -2,6 +2,7 @@ package progressbar
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	uiprogress "github.com/gosuri/uiprogress"
@@ -13,6 +14,8 @@ import (
 
 type ProgressBar interface {
 	Add(x int)
+	// AddFileSize(path)
+	AddFileSize(string)
 	Add1()
 }
 
@@ -58,6 +61,9 @@ func (pb ProgressBarMoc) Add(x int) {
 }
 
 func (pb ProgressBarMoc) Add1() {
+}
+
+func (pb ProgressBarMoc) AddFileSize(string) {
 }
 
 // ///////////////////////////////////
@@ -113,4 +119,13 @@ func (uiP UiProgressBar) Add(x int) {
 
 func (uiP UiProgressBar) Add1() {
 	uiP.bar.Incr()
+}
+
+func (uiP UiProgressBar) AddFileSize(path string) {
+	// Get the fileinfo
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		panic(fmt.Errorf("addFileSize failed for: %s", path))
+	}
+	uiP.Add(int(fileInfo.Size()))
 }

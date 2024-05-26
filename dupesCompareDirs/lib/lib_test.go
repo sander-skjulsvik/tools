@@ -209,13 +209,13 @@ func TestOnlyInAll(t *testing.T) {
 		calcHashes.Add(hash)
 	}
 
-	d1Dupes := singleThread.Run(filepath.Join(rootPath, "d1"))
+	d1Dupes := singleThread.Run(filepath.Join(rootPath, "d1"), progressbar.ProgressBarMoc{})
 	d1Hashes := set.NewSet([]string{}...)
 	for hash := range d1Dupes.D {
 		d1Hashes.Add(hash)
 	}
 
-	d2Dupes := singleThread.Run(filepath.Join(rootPath, "d2"))
+	d2Dupes := singleThread.Run(filepath.Join(rootPath, "d2"), progressbar.ProgressBarMoc{})
 	d2Hashes := set.NewSet([]string{}...)
 	for hash := range d2Dupes.D {
 		d2Hashes.Add(hash)
@@ -276,8 +276,8 @@ func TestOnlyInFirst(t *testing.T) {
 
 	// Hashes
 	calcHashes := set.NewThreadUnsafeSetFromMapKeys(calcDupes.D)
-	d1Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d1FullPath).D)
-	d2Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d2FullPath).D)
+	d1Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d1FullPath, progressbar.ProgressBarMoc{}).D)
+	d2Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d2FullPath, progressbar.ProgressBarMoc{}).D)
 	expectedHashes := d1Hashes.Intersect(d1Hashes.Difference(d2Hashes))
 
 	if !calcHashes.Equal(expectedHashes) {
@@ -324,8 +324,8 @@ func TestAll(t *testing.T) {
 
 	// Hashes
 	calcHashes := set.NewThreadUnsafeSetFromMapKeys(calcDupes.D)
-	d1Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d1FullPath).D)
-	d2Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d2FullPath).D)
+	d1Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d1FullPath, progressbar.ProgressBarMoc{}).D)
+	d2Hashes := set.NewThreadUnsafeSetFromMapKeys(singleThread.Run(d2FullPath, progressbar.ProgressBarMoc{}).D)
 	expectedHashes := d1Hashes.Union(d2Hashes)
 	if !calcHashes.Equal(expectedHashes) {
 		t.Errorf("Expected %v, got %v", expectedHashes, calcHashes)
