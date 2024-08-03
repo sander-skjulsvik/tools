@@ -3,3 +3,4 @@ tmp*
 tools
 dedupe/bin/*
 *.exe
+data/*
