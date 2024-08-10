@@ -6,7 +6,24 @@ import (
 	"testing"
 )
 
-const TEST_DATA_FOLDER = "lib_test_data"
+const (
+	TEST_DATA_FOLDER        = "lib_test_data"
+	SIMPLE_TEST_DATA_STRING = `{
+		"locations": [
+			{"latitudeE7": 1234567, "longitudeE7": 2345678, "timestamp": "2021-01-01T12:00:00Z"},
+			{"latitudeE7": 2345678, "longitudeE7": 3456789, "timestamp": "2021-01-02T12:00:00Z"},
+			{"latitudeE7": 3456789, "longitudeE7": 4567890, "timestamp": "2021-01-03T12:00:00Z"}
+		]
+	}`
+)
+
+var SIMPLE_TEST_DATA_SOURCE_LOCATION = SourceLocationData{
+	Locations: []SourceLocationRecord{
+		{LatitudeE7: 1234567, LongitudeE7: 2345678, TimeStamp: "2021-01-01T12:00:00Z"},
+		{LatitudeE7: 2345678, LongitudeE7: 3456789, TimeStamp: "2021-01-02T12:00:00Z"},
+		{LatitudeE7: 3456789, LongitudeE7: 4567890, TimeStamp: "2021-01-03T12:00:00Z"},
+	},
+}
 
 func TestImportSourceLocationData(t *testing.T) {
 	// Create a test data file
@@ -18,15 +35,7 @@ func TestImportSourceLocationData(t *testing.T) {
 	}
 	defer os.RemoveAll(TEST_DATA_FOLDER)
 
-	data := `{
-		"locations": [
-			{"latitudeE7": 1234567, "longitudeE7": 2345678, "timestamp": "2021-01-01T12:00:00Z"},
-			{"latitudeE7": 2345678, "longitudeE7": 3456789, "timestamp": "2021-01-02T12:00:00Z"},
-			{"latitudeE7": 3456789, "longitudeE7": 4567890, "timestamp": "2021-01-03T12:00:00Z"}
-		]
-	}`
-
-	err = os.WriteFile(testSourceData, []byte(data), 0o644)
+	err = os.WriteFile(testSourceData, []byte(SIMPLE_TEST_DATA_STRING), 0o644)
 	if err != nil {
 		t.Fatalf("Error creating test data file: %v", err)
 	}
@@ -47,5 +56,62 @@ func TestImportSourceLocationData(t *testing.T) {
 	}
 	if locations[2].TimeStamp != "2021-01-03T12:00:00Z" {
 		t.Errorf("Expected timestamp 2021-01-03T12:00:00Z, got %s", locations[0].TimeStamp)
+	}
+}
+
+func TestSortByTime(t *testing.T) {
+	sourceData := SIMPLE_TEST_DATA_SOURCE_LOCATION
+	// Swap
+	sourceData.Locations[0], sourceData.Locations[1] = sourceData.Locations[1], sourceData.Locations[0]
+	sourceData.SortByTime()
+	locations := sourceData.Locations
+
+	// Check the order of the records
+	if locations[0].TimeStamp != "2021-01-01T12:00:00Z" {
+		t.Errorf("Expected first record timestamp 2021-01-01T12:00:00Z, got %s", locations[0].TimeStamp)
+	}
+	if locations[1].TimeStamp != "2021-01-02T12:00:00Z" {
+		t.Errorf("Expected second record timestamp 2021-01-02T12:00:00Z, got %s", locations[1].TimeStamp)
+	}
+	if locations[2].TimeStamp != "2021-01-03T12:00:00Z" {
+		t.Errorf("Expected third record timestamp 2021-01-03T12:00:00Z, got %s", locations[2].TimeStamp)
+	}
+}
+
+func TestByTimeComp(t *testing.T) {
+	var byTime ByTime
+	byTime = SIMPLE_TEST_DATA_SOURCE_LOCATION.Locations
+
+	if byTime.Comp(0, 1) != -1 {
+		t.Errorf("Expected -1, got %d", byTime.Comp(0, 1))
+	}
+	if byTime.Comp(1, 0) != 1 {
+		t.Errorf("Expected 1, got %d", byTime.Comp(1, 0))
+	}
+	if byTime.Comp(0, 0) != 0 {
+		t.Errorf("Expected 0, got %d", byTime.Comp(0, 0))
+	}
+}
+
+func TestGetLocation(t *testing.T) {
+	// Setup
+	sourceData := SIMPLE_TEST_DATA_SOURCE_LOCATION
+	sourceData.Locations = append(sourceData.Locations, SourceLocationRecord{
+		LatitudeE7: 4567890, LongitudeE7: 5678901, TimeStamp: "2021-01-04T12:00:00Z",
+	})
+	sourceData.SortByTime()
+
+	// Test the GetLocation function
+	locationBefore, locationAfter, err := sourceData.GetLocation(ParseTime("2021-01-02T12:00:00Z"))
+	if err != nil {
+		t.Errorf("Error getting location: %v", err)
+	}
+
+	// Check the values of the records
+	if locationBefore.TimeStamp != "2021-01-01T12:00:00Z" {
+		t.Errorf("Expected location before timestamp 2021-01-01T12:00:00Z, got %s", locationBefore.TimeStamp)
+	}
+	if locationAfter.TimeStamp != "2021-01-03T12:00:00Z" {
+		t.Errorf("Expected location after timestamp 2021-01-03T12:00:00Z, got %s", locationAfter.TimeStamp)
 	}
 }

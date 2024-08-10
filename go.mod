@@ -12,7 +12,9 @@ require (
 )
 
 require (
+	github.com/barasher/go-exiftool v1.10.0
 	github.com/deckarep/golang-set/v2 v2.6.0
+	github.com/dustin/go-heatmap v0.0.0-20180603032536-b89dbd73785a
 	golang.org/x/sys v0.19.0 // indirect
 	gotest.tools v2.2.0+incompatible
 )
