@@ -1,6 +1,10 @@
 package lib
 
 import (
+	"errors"
+	"fmt"
+
+	nmea "github.com/adrianmo/go-nmea"
 	geo "github.com/kellydunn/golang-geo"
 )
 
@@ -24,6 +28,28 @@ func NewCoordinatesFromGeopoint(point geo.Point) Corrdinates {
 	return Corrdinates{
 		Point: point,
 	}
+}
+
+var ErrInvalidDMS = errors.New("Invalid DMS")
+
+func NewCoordinatesFromDMS(latitude, longitude string) (Corrdinates, error) {
+	lat, err := nmea.ParseDMS(latitude)
+	if err != nil {
+		return Corrdinates{}, errors.Join(
+			ErrInvalidDMS,
+			fmt.Errorf("latitude: %s", latitude),
+			err,
+		)
+	}
+	lng, err := nmea.ParseDMS(longitude)
+	if err != nil {
+		return Corrdinates{}, errors.Join(
+			ErrInvalidDMS,
+			fmt.Errorf("longitude: %s", longitude),
+			err,
+		)
+	}
+	return NewCorrdinatesE2(lat, lng), nil
 }
 
 func (coordinate *Corrdinates) GetE2Coord() (lat float64, long float64) {
