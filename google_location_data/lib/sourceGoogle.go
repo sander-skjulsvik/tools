@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
+
+	toolsTime "github.com/sander-skjulsvik/tools/libs/time"
 )
 
 type GoogleTimelineTakeout struct {
@@ -44,23 +47,35 @@ func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineLocations, 
 	return gogleTimeLineLocations, nil
 }
 
-func (g *GoogleTimelineTakeout) ToLocationRecords() (*SourceLocations, error) {
+var ErrUnableToCreateCoordinates = fmt.Errorf("Unable to create coordinates")
+
+func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
 	SourceLocations := SourceLocations{}
 
 	locations := make([]LocationRecord, len(g.Locations))
 
 	for i, loc := range g.Locations {
-		c, err := NewCorrdinatesE7(loc.LatitudeE7, loc.LongitudeE7)
+		c := NewCorrdinatesE7(loc.LatitudeE7, loc.LongitudeE7)
+		parsedTime, err := g.ParseTime(loc.Timestamp)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to create coordinates: %v", err)
+			fmt.Printf("Error parsing time for record: %v, err: %v\n", loc, err)
+			continue
 		}
-
 		locations[i] = LocationRecord{
 			Corrdinates: c,
-			Time:        ParseTime(loc.Timestamp),
+			Time:        *parsedTime,
 		}
 	}
 
 	SourceLocations.Locations = locations
-	return &SourceLocations, nil
+	return &SourceLocations
+}
+
+func (g GoogleTimelineTakeout) ParseTime(timeStr string) (*time.Time, error) {
+	googleTimelineTimeLayout := toolsTime.RFC3339
+	t, err := time.Parse(googleTimelineTimeLayout, timeStr)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }

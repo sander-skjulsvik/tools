@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"errors"
 	"testing"
 	"time"
 )
@@ -24,10 +23,7 @@ func TestToLocationRecords(t *testing.T) {
 	}
 
 	// Call the ToLocationRecords method
-	sourceLocations, err := googleTimelineTakeout.ToLocationRecords()
-	if err != nil {
-		t.Errorf("Error calling ToLocationRecords: %v", err)
-	}
+	sourceLocations := googleTimelineTakeout.ToLocationRecords()
 
 	// Check that the sourceLocations struct has the correct number of locations
 	if len(sourceLocations.Locations) != 2 {
@@ -35,17 +31,17 @@ func TestToLocationRecords(t *testing.T) {
 	}
 
 	// Check that the sourceLocations struct has the correct locations
-	if sourceLocations.Locations[0].Corrdinates.LatitudeE7 != 633954185 {
-		t.Errorf("Expected first location latitude 633954185, got %d", sourceLocations.Locations[0].Corrdinates.LatitudeE7)
+	if sourceLocations.Locations[0].Corrdinates.LatE7() != 633954185 {
+		t.Errorf("Expected first location latitude 633954185, got %d", sourceLocations.Locations[0].Corrdinates.LatE7())
 	}
-	if sourceLocations.Locations[0].Corrdinates.LongitudeE7 != 103719669 {
-		t.Errorf("Expected first location longitude 103719669, got %d", sourceLocations.Locations[0].Corrdinates.LongitudeE7)
+	if sourceLocations.Locations[0].Corrdinates.LngE7() != 103719669 {
+		t.Errorf("Expected first location longitude 103719669, got %d", sourceLocations.Locations[0].Corrdinates.LngE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LatitudeE7 != 633954162 {
-		t.Errorf("Expected second location latitude 633954162, got %d", sourceLocations.Locations[1].Corrdinates.LatitudeE7)
+	if sourceLocations.Locations[1].Corrdinates.LatE7() != 633954162 {
+		t.Errorf("Expected second location latitude 633954162, got %d", sourceLocations.Locations[1].Corrdinates.LatE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LongitudeE7 != 103720388 {
-		t.Errorf("Expected second location longitude 103720388, got %d", sourceLocations.Locations[1].Corrdinates.LongitudeE7)
+	if sourceLocations.Locations[1].Corrdinates.LngE7() != 103720388 {
+		t.Errorf("Expected second location longitude 103720388, got %d", sourceLocations.Locations[1].Corrdinates.LngE7())
 	}
 
 	// Check that the sourceLocations struct has the correct timestamps
@@ -64,36 +60,5 @@ func TestToLocationRecords(t *testing.T) {
 	}
 	if sourceLocations.Locations[1].Time.Sub(sourceLocations.Locations[0].Time) == time.Hour*1 {
 		t.Errorf("Expected first location timestamp to be before second location timestamp")
-	}
-
-	// Tesing with strange coordinates
-	latitudeOutOfRange := GoogleTimelineTakeout{
-		Locations: []GoogleTimelineLocations{
-			// Latitude out of range
-			{
-				LatitudeE7:  1000000000,
-				LongitudeE7: 103719669,
-				Timestamp:   "2014-04-22T12:15:05.138Z",
-			},
-		},
-	}
-	longitudeOutOfRange := GoogleTimelineTakeout{
-		Locations: []GoogleTimelineLocations{
-			// Longitude out of range
-			{
-				LatitudeE7:  633954185,
-				LongitudeE7: -100000000,
-				Timestamp:   "2014-04-22T12:15:05.138Z",
-			},
-		},
-	}
-
-	_, err = latitudeOutOfRange.ToLocationRecords()
-	if errors.Is(err, ErrLatitudeOutOfRange) {
-		t.Errorf("Expected ErrLatitudeOutOfRange error, got: %v", err)
-	}
-	_, err = longitudeOutOfRange.ToLocationRecords()
-	if errors.Is(err, ErrLongitudeOutOfRange) {
-		t.Errorf("Expected ErrLongitudeOutOfRange error, got: %v", err)
 	}
 }
