@@ -5,10 +5,44 @@ import (
 	"time"
 )
 
+func TestNewGoogleTimelineLocationsFromFile(t *testing.T) {
+	// Open test file
+	path := "test_data/test_google_location_data.json"
+	takeout, err := NewGoogleTimelineLocationsFromFile(path)
+	if err != nil {
+		t.Errorf("Expected no error opening data, got %v", err)
+	}
+
+	// Check that the googleTimelineLocations struct has the correct number of locations
+	if len(takeout.Locations) != 3 {
+		t.Errorf("Expected 3 locations, got %d, takeout: %v", len(takeout.Locations), takeout)
+	}
+
+	// Check that the googleTimelineLocations struct has the correct locations
+	if takeout.Locations[0].LatitudeE7 != 1 {
+		t.Errorf("Expected Lat 1, got %d from location 0", takeout.Locations[0].LatitudeE7)
+	}
+	if takeout.Locations[0].LongitudeE7 != 2 {
+		t.Errorf("Expected Long 2, got %d from location 0", takeout.Locations[0].LongitudeE7)
+	}
+	if takeout.Locations[1].LatitudeE7 != 3 {
+		t.Errorf("Expected Lat 3, got %d from location 1", takeout.Locations[1].LongitudeE7)
+	}
+	if takeout.Locations[1].LongitudeE7 != 4 {
+		t.Errorf("Expected Long 4, got %d from location 1", takeout.Locations[1].LongitudeE7)
+	}
+	if takeout.Locations[2].LatitudeE7 != 5 {
+		t.Errorf("Expected Lat 5, got %d from location 2", takeout.Locations[2].LatitudeE7)
+	}
+	if takeout.Locations[2].LongitudeE7 != 6 {
+		t.Errorf("Expected Long 6, got %d from location 2", takeout.Locations[2].LongitudeE7)
+	}
+}
+
 func TestToLocationRecords(t *testing.T) {
 	// Create a GoogleTimelineTakeout struct with some test data
 	googleTimelineTakeout := GoogleTimelineTakeout{
-		Locations: []GoogleTimelineLocations{
+		Locations: []GoogleTimelineLocation{
 			{
 				LatitudeE7:  633954185,
 				LongitudeE7: 103719669,
