@@ -49,7 +49,7 @@ func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineTakeout, er
 		)
 	}
 	takeout := &GoogleTimelineTakeout{}
-	if err := json.Unmarshal(bytes, &GoogleTimelineTakeout{}); err != nil {
+	if err := json.Unmarshal(bytes, &takeout); err != nil {
 		return nil, errors.Join(
 			ErrUnableToUnmarshalSourceDataFile,
 			fmt.Errorf("file: %s", path),

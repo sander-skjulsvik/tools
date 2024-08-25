@@ -1,0 +1,78 @@
+{
+    "locations": [
+        {
+            "latitudeE7": 1,
+            "longitudeE7": 2,
+            "accuracy": 20,
+            "activity": [
+                {
+                    "activity": [
+                        {
+                            "type": "UNKNOWN",
+                            "confidence": 60
+                        },
+                        {
+                            "type": "STILL",
+                            "confidence": 19
+                        },
+                        {
+                            "type": "IN_VEHICLE",
+                            "confidence": 17
+                        },
+                        {
+                            "type": "ON_BICYCLE",
+                            "confidence": 1
+                        },
+                        {
+                            "type": "ON_FOOT",
+                            "confidence": 1
+                        }
+                    ],
+                    "timestamp": "2014-04-22T12:14:29.557Z"
+                }
+            ],
+            "source": "WIFI",
+            "deviceTag": 1000000000,
+            "timestamp": "2014-04-22T12:15:05.148Z"
+        },
+        {
+            "latitudeE7": 3,
+            "longitudeE7": 4,
+            "accuracy": 20,
+            "source": "WIFI",
+            "deviceTag": 2116609889,
+            "timestamp": "2014-04-22T12:16:05.138Z"
+        },
+        {
+            "latitudeE7": 5,
+            "longitudeE7": 6,
+            "accuracy": 20,
+            "activity": [
+                {
+                    "activity": [
+                        {
+                            "type": "UNKNOWN",
+                            "confidence": 67
+                        },
+                        {
+                            "type": "STILL",
+                            "confidence": 20
+                        },
+                        {
+                            "type": "IN_VEHICLE",
+                            "confidence": 5
+                        },
+                        {
+                            "type": "ON_FOOT",
+                            "confidence": 5
+                        }
+                    ],
+                    "timestamp": "2014-04-22T12:17:19.641Z"
+                }
+            ],
+            "source": "WIFI",
+            "deviceTag": 1000000000,
+            "timestamp": "2014-04-22T12:17:05.248Z"
+        }
+    ]
+}
