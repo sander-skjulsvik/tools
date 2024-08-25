@@ -11,43 +11,54 @@ import (
 	toolsTime "github.com/sander-skjulsvik/tools/libs/time"
 )
 
-type GoogleTimelineTakeout struct {
-	Locations []GoogleTimelineLocations `json:"locations"`
-}
-
-type GoogleTimelineLocations struct {
+type GoogleTimelineLocation struct {
 	LatitudeE7  int    `json:"latitudeE7"`
 	LongitudeE7 int    `json:"longitudeE7"`
-	Timestamp   string `json:"timestampMs"`
+	Timestamp   string `json:"timestamp"`
+}
+
+type GoogleTimelineTakeout struct {
+	Locations []GoogleTimelineLocation `json:"locations"`
 }
 
 var (
 	ErrUnableToOpenSourceDataFile      = errors.New("Unable to open source data file")
 	ErrUnableToReadSourceDataFile      = errors.New("Unable to read source data file")
 	ErrUnableToUnmarshalSourceDataFile = errors.New("Unable to unmarshal source data file")
+	ErrUnableToCreateCoordinates       = errors.New("Unable to create coordinates")
 )
 
-func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineLocations, error) {
+func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineTakeout, error) {
 	// Read the file
 	jsonFile, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUnableToOpenSourceDataFile, err)
+		return nil, errors.Join(
+			ErrUnableToOpenSourceDataFile,
+			fmt.Errorf("file: %s,", path),
+			err,
+		)
 	}
 	defer jsonFile.Close()
 	// Unmarshal the data into a struct
 	bytes, err := io.ReadAll(jsonFile)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUnableToReadSourceDataFile, err)
+		return nil, errors.Join(
+			ErrUnableToReadSourceDataFile,
+			fmt.Errorf("file: %s", path),
+			err,
+		)
 	}
-	gogleTimeLineLocations := &GoogleTimelineLocations{}
-	if err := json.Unmarshal(bytes, &GoogleTimelineLocations{}); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUnableToUnmarshalSourceDataFile, err)
+	takeout := &GoogleTimelineTakeout{}
+	if err := json.Unmarshal(bytes, &GoogleTimelineTakeout{}); err != nil {
+		return nil, errors.Join(
+			ErrUnableToUnmarshalSourceDataFile,
+			fmt.Errorf("file: %s", path),
+			err,
+		)
 	}
 	// Convert the data into a SourceLocations struct
-	return gogleTimeLineLocations, nil
+	return takeout, nil
 }
-
-var ErrUnableToCreateCoordinates = fmt.Errorf("Unable to create coordinates")
 
 func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
 	SourceLocations := SourceLocations{}
