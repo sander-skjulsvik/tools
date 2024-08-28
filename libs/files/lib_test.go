@@ -10,22 +10,25 @@ import (
 func TestGetAllFilesOfType(t *testing.T) {
 	// Setup
 	var (
-		basePath = "../test_files"
-		fileType = ".txt"
-		paths    = []string{
+		basePath  = "../test_files"
+		fileTypes = []string{".txt", ".raf"}
+
+		paths = []string{
 			"/file1.txt",
 			"/file2.txt/abc.raf",
+			"/file2.txt/abc.raf1",
 			"/file3/abc.txt",
 			"/file4.txt/abc.txt",
 			"/file5.txt",
 			"/file6.tx",
 			"/file7t.xt",
-		} // Create files
+		}
 		expectedFilePaths = []string{
 			"file1.txt",
 			"/file3/abc.txt",
 			"/file4.txt/abc.txt",
 			"/file5.txt",
+			"/file2.txt/abc.raf",
 		}
 	)
 	defer os.RemoveAll(basePath)
@@ -38,7 +41,7 @@ func TestGetAllFilesOfType(t *testing.T) {
 		}
 	}
 	// Test
-	files, err := GetAllFilesOfType(basePath, fileType)
+	files, err := GetAllFilesOfTypes(basePath, fileTypes)
 	if err != nil {
 		t.Errorf("Error getting files of type: %v", err)
 	}

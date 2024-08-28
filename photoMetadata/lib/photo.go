@@ -7,17 +7,45 @@ import (
 	"time"
 
 	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
+	"github.com/sander-skjulsvik/tools/libs/files"
 )
+
+// should all be lowercase
+var SUPPORTED_FILE_TYPES = []string{
+	".raf",
+}
+
+type PhotoCollection struct {
+	Photos []Photo
+}
+
+func NewPhotoCollectionFromPath(path string) (*PhotoCollection, error) {
+	collection := PhotoCollection{}
+	paths, err := files.GetAllFilesOfTypes(path, SUPPORTED_FILE_TYPES)
+	numberOfFiles, _ := files.GetNumberOfFiles(path)
+	fmt.Printf("Number of files: %v\n", numberOfFiles)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting files %v", err)
+	}
+	for _, path := range paths {
+		collection.Photos = append(collection.Photos, *NewPhotoFromPath(path))
+	}
+	return &collection, nil
+}
 
 type Photo struct {
 	Path string
+}
+
+func NewPhotoFromPath(path string) *Photo {
+	return &Photo{Path: path}
 }
 
 const (
 	DateTimeOriginal   = "DateTimeOriginal"
 	GPSPosition        = "GPSPosition"
 	GPSDateTime        = "GPSDateTime"
-	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00"
+	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00" // Atleast for fuji
 )
 
 // New photo funcs

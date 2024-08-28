@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 )
 
 func CreateEmptyFileWithFolders(path string) error {
@@ -25,7 +27,11 @@ func CreateFile(path, content string) error {
 	return os.WriteFile(filepath.Clean(path), []byte(content), 0o644)
 }
 
-func GetAllFilesOfType(path string, fileType string) ([]string, error) {
+/*
+GetAllFilesOfTypes returns all files of the specified types in the specified directory.
+filetypes needs to be prefixed with a dot. E.g. ".txt", and lowercase.
+*/
+func GetAllFilesOfTypes(path string, fileTypes []string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(
 		path,
@@ -39,7 +45,9 @@ func GetAllFilesOfType(path string, fileType string) ([]string, error) {
 			if info.IsDir() {
 				return nil
 			}
-			if filepath.Ext(path) == fileType {
+			p := strings.ToLower(filepath.Ext(path))
+			b := slices.Contains(fileTypes, p)
+			if b {
 				files = append(files, path)
 			}
 			return nil
