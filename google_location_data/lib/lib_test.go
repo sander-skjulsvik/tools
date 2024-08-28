@@ -19,9 +19,9 @@ const (
 )
 
 var LOCATIONS = []LocationRecord{
-	{NewCorrdinatesE7(1234567, 2345678), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-01T12:00:00Z")},
-	{NewCorrdinatesE7(2345678, 3456789), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z")},
-	{NewCorrdinatesE7(3456789, 4567890), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-03T12:00:00Z")},
+	{NewCoordinatesE7(1234567, 2345678), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-01T12:00:00Z")},
+	{NewCoordinatesE7(2345678, 3456789), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z")},
+	{NewCoordinatesE7(3456789, 4567890), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-03T12:00:00Z")},
 }
 
 var (
@@ -52,7 +52,7 @@ func TestGetLocation(t *testing.T) {
 	// Setup
 	sourceData := SIMPLE_TEST_DATA_SOURCE_LOCATION
 	sourceData.Locations = append(sourceData.Locations, LocationRecord{
-		NewCorrdinatesE7(4567890, 5678901), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-04T12:00:00Z"),
+		NewCoordinatesE7(4567890, 5678901), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-04T12:00:00Z"),
 	})
 	sourceData.SortByTime()
 
@@ -112,11 +112,11 @@ func TestInterpolation(t *testing.T) {
 	var (
 		diff       = 1
 		locRecord1 = LocationRecord{
-			NewCorrdinatesE7(1234567, 2345678),
+			NewCoordinatesE7(1234567, 2345678),
 			*toolsTime.ParseTimeNoErrorRFC3339("2021-01-01T12:00:00Z"),
 		}
 		locRecord2 = LocationRecord{
-			NewCorrdinatesE7(
+			NewCoordinatesE7(
 				locRecord1.Coordinates.LatE7()+diff,
 				locRecord1.Coordinates.LngE7()+diff,
 			),

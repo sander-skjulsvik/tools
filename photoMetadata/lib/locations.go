@@ -47,7 +47,7 @@ func NewLocationStoreFromGoogleTimelinePath(path string) (*LocationStore, error)
 }
 
 /*
-This function will have to do some assumtions when the time between location stamps is too large.
+This function will have to do some assumptions when the time between location stamps is too large.
 
 It is implemented with 3 types of assumptions:
 
@@ -55,6 +55,7 @@ It is implemented with 3 types of assumptions:
 - If the time between the photo and the location is medium we will assume we will attempt a linear interpolation between the two locations.
 - If the time is large we will return an error, and assume the user will have to provide the data themselves.
 */
+// TODO: Add test for this function
 func (locStore *LocationStore) GetCoordinatesByTime(time time.Time) (locationData.Coordinates, error) {
 	// Find the closest location to the given time
 	closestLocationInd, err := locStore.SourceLocations.FindClosestLocation(time)

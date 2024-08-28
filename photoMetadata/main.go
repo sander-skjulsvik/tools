@@ -65,6 +65,7 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 			fmt.Printf("Error getting photo time for %s, err: %v", photo.Path, err)
 			continue
 		}
+
 		coordinates, err := locationStore.GetCoordinatesByTime(photoTime)
 		switch {
 		case err == nil || errors.Is(err, lib.ErrTimeDiffMedium):

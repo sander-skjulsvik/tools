@@ -22,10 +22,10 @@ type GoogleTimelineTakeout struct {
 }
 
 var (
-	ErrUnableToOpenSourceDataFile      = errors.New("Unable to open source data file")
-	ErrUnableToReadSourceDataFile      = errors.New("Unable to read source data file")
-	ErrUnableToUnmarshalSourceDataFile = errors.New("Unable to unmarshal source data file")
-	ErrUnableToCreateCoordinates       = errors.New("Unable to create coordinates")
+	ErrUnableToOpenSourceDataFile      = errors.New("unable to open source data file")
+	ErrUnableToReadSourceDataFile      = errors.New("unable to read source data file")
+	ErrUnableToUnmarshalSourceDataFile = errors.New("unable to unmarshal source data file")
+	ErrUnableToCreateCoordinates       = errors.New("unable to create coordinates")
 )
 
 func NewSourceLocationsFromGoogleTimeline(path string) (*SourceLocations, error) {
@@ -67,7 +67,7 @@ func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
 	locations := make([]LocationRecord, len(g.Locations))
 
 	for i, loc := range g.Locations {
-		c := NewCorrdinatesE7(loc.LatitudeE7, loc.LongitudeE7)
+		c := NewCoordinatesE7(loc.LatitudeE7, loc.LongitudeE7)
 		parsedTime, err := g.ParseTime(loc.Timestamp)
 		if err != nil {
 			fmt.Printf("Error parsing time for record: %v, err: %v\n", loc, err)

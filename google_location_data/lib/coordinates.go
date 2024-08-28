@@ -19,7 +19,7 @@ func NewCorrdinatesE2(lat, long float64) Coordinates {
 	}
 }
 
-func NewCorrdinatesE7(lat, long int) Coordinates {
+func NewCoordinatesE7(lat, long int) Coordinates {
 	return Coordinates{
 		Point: *geo.NewPoint(float64(lat)/1e7, float64(long)/1e7),
 	}
@@ -31,7 +31,7 @@ func NewCoordinatesFromGeopoint(point geo.Point) Coordinates {
 	}
 }
 
-var ErrInvalidDMS = errors.New("Invalid DMS")
+var ErrInvalidDMS = errors.New("invalid DMS")
 
 func NewCoordinatesFromDMS(latitude, longitude string) (Coordinates, error) {
 	lat, err := nmea.ParseDMS(latitude)
