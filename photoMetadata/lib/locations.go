@@ -56,32 +56,32 @@ It is implemented with 3 types of assumptions:
 - If the time is large we will return an error, and assume the user will have to provide the data themselves.
 */
 // TODO: Add test for this function
-func (locStore *LocationStore) GetCoordinatesByTime(time time.Time) (locationData.Coordinates, error) {
+func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationData.Coordinates, time.Duration, error) {
 	// Find the closest location to the given time
-	closestLocationInd, err := locStore.SourceLocations.FindClosestLocation(time)
+	closestLocationInd, err := locStore.SourceLocations.FindClosestLocation(qTime)
 	if err != nil {
-		return locationData.Coordinates{}, err
+		return locationData.Coordinates{}, 0, err
 	}
 	closestLocation := locStore.SourceLocations.Locations[closestLocationInd]
 
 	// Check the time difference
-	timeDiff := time.Sub(closestLocation.Time)
+	timeDiff := qTime.Sub(closestLocation.Time)
 	switch {
 	case timeDiff <= locStore.LowTimeDiffThreshold:
 		// If the time difference is low, return the location
-		return closestLocation.Coordinates, nil
+		return closestLocation.Coordinates, timeDiff, nil
 	case timeDiff <= locStore.MediumTimeDiffThreshold:
 		// If the time difference is medium, attempt linear interpolation
 		// Find the previous location
-		return closestLocation.Coordinates, ErrTimeDiffMedium
+		return closestLocation.Coordinates, timeDiff, ErrTimeDiffMedium
 	case timeDiff <= locStore.HighTimeDiffThreshold:
 		// If the time difference is high, return an error
-		return closestLocation.Coordinates, errors.Join(
+		return closestLocation.Coordinates, timeDiff, errors.Join(
 			ErrTimeDiffTooHigh,
 			fmt.Errorf("diff: %s", timeDiff),
 		)
 	}
 
 	// Return the location
-	return locationData.Coordinates{}, ErrNoLocation
+	return locationData.Coordinates{}, timeDiff, ErrNoLocation
 }

@@ -90,15 +90,15 @@ func applyLocationData(photo lib.Photo, locationStore lib.LocationStore, dryRun 
 		return
 	}
 
-	coordinates, err := locationStore.GetCoordinatesByTime(photoTime)
+	coordinates, timediff, err := locationStore.GetCoordinatesByTime(photoTime)
 	switch {
 	case err == nil || errors.Is(err, lib.ErrTimeDiffMedium):
 		if !dryRun {
-			fmt.Printf("%s: %v\n", photo.Path, coordinates.CoordDMS())
+			fmt.Printf("%s\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordDMS(), timediff)
 
 			photo.WriteExifGPSLocation(coordinates)
 		} else {
-			fmt.Printf("%s: %v\n", photo.Path, coordinates.CoordDMS())
+			fmt.Printf("%s,\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordDMS(), timediff)
 
 		}
 	default:
