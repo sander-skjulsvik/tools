@@ -22,8 +22,6 @@ type PhotoCollection struct {
 func NewPhotoCollectionFromPath(path string) (*PhotoCollection, error) {
 	collection := PhotoCollection{}
 	paths, err := files.GetAllFilesOfTypes(path, SUPPORTED_FILE_TYPES)
-	numberOfFiles, _ := files.GetNumberOfFiles(path)
-	fmt.Printf("Number of files: %v\n", numberOfFiles)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting files %v", err)
 	}
@@ -37,6 +35,7 @@ type Photo struct {
 	Path string
 }
 
+// New photo funcs
 func NewPhotoFromPath(path string) *Photo {
 	return &Photo{Path: path}
 }
@@ -47,8 +46,6 @@ const (
 	GPSDateTime        = "GPSDateTime"
 	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00" // Atleast for fuji
 )
-
-// New photo funcs
 
 // Photo methods
 
