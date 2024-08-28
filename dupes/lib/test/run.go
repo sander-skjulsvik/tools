@@ -118,12 +118,3 @@ func check(e error) {
 		panic(e)
 	}
 }
-
-func CreateEmptyFile(path string) {
-	d := []byte("")
-	check(os.WriteFile(filepath.Clean(path), d, 0o644))
-}
-
-func CreateFile(path, content string) {
-	check(os.WriteFile(filepath.Clean(path), []byte(content), 0o644))
-}
