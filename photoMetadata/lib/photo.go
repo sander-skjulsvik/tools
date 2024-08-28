@@ -44,14 +44,12 @@ const (
 	DateTimeOriginal   = "DateTimeOriginal"
 	GPSPosition        = "GPSPosition"
 	GPSDateTime        = "GPSDateTime"
-	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00" // At least for fuji
+	ExifDateTimeLatout = "2006:01:02 15:04:05" // At least for fuji (?)  "2006:01:02 15:04:05-07:00"
 )
 
 // Photo methods
 
 func (photo *Photo) SearchExifData(search string) interface{} {
-	fmt.Println("Searching for data")
-
 	fileInfos, err := GetAllExifData(photo.Path)
 	if err != nil {
 		fmt.Printf("Error: %v", err)

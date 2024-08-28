@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"log"
 	"sort"
 	"time"
 )
@@ -20,7 +19,7 @@ func (sourceData *SourceLocations) FindClosestLocation(time time.Time) (ind int,
 	locationAfterInd = sort.Search(len(sourceData.Locations), func(i int) bool {
 		return sourceData.Locations[i].Time.After(time)
 	})
-	log.Default().Printf("locationAfterInd: %d", locationAfterInd)
+	// log.Default().Printf("locationAfterInd: %d", locationAfterInd)
 	// Handling edge cases, max and min
 	if locationAfterInd == len(sourceData.Locations) {
 		return locationAfterInd - 1, nil
