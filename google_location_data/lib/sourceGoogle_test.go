@@ -8,34 +8,34 @@ import (
 func TestNewGoogleTimelineLocationsFromFile(t *testing.T) {
 	// Open test file
 	path := "test_data/test_google_location_data.json"
-	takeout, err := NewGoogleTimelineLocationsFromFile(path)
+	sourceLocations, err := NewSourceLocationsFromGoogleTimeline(path)
 	if err != nil {
 		t.Errorf("Expected no error opening data, got %v", err)
 	}
 
 	// Check that the googleTimelineLocations struct has the correct number of locations
-	if len(takeout.Locations) != 3 {
-		t.Errorf("Expected 3 locations, got %d, takeout: %v", len(takeout.Locations), takeout)
+	if len(sourceLocations.Locations) != 3 {
+		t.Errorf("Expected 3 locations, got %d, takeout: %v", len(sourceLocations.Locations), sourceLocations)
 	}
 
 	// Check that the googleTimelineLocations struct has the correct locations
-	if takeout.Locations[0].LatitudeE7 != 1 {
-		t.Errorf("Expected Lat 1, got %d from location 0", takeout.Locations[0].LatitudeE7)
+	if sourceLocations.Locations[0].Corrdinates.LatE7() != 1 {
+		t.Errorf("Expected Lat 1, got %d from location 0", sourceLocations.Locations[0].Corrdinates.LatE7())
 	}
-	if takeout.Locations[0].LongitudeE7 != 2 {
-		t.Errorf("Expected Long 2, got %d from location 0", takeout.Locations[0].LongitudeE7)
+	if sourceLocations.Locations[0].Corrdinates.LngE7() != 2 {
+		t.Errorf("Expected Long 2, got %d from location 0", sourceLocations.Locations[0].Corrdinates.LngE7())
 	}
-	if takeout.Locations[1].LatitudeE7 != 3 {
-		t.Errorf("Expected Lat 3, got %d from location 1", takeout.Locations[1].LongitudeE7)
+	if sourceLocations.Locations[1].Corrdinates.LatE7() != 3 {
+		t.Errorf("Expected Lat 3, got %d from location 1", sourceLocations.Locations[1].Corrdinates.LatE7())
 	}
-	if takeout.Locations[1].LongitudeE7 != 4 {
-		t.Errorf("Expected Long 4, got %d from location 1", takeout.Locations[1].LongitudeE7)
+	if sourceLocations.Locations[1].Corrdinates.LngE7() != 4 {
+		t.Errorf("Expected Long 4, got %d from location 1", sourceLocations.Locations[1].Corrdinates.LngE7())
 	}
-	if takeout.Locations[2].LatitudeE7 != 5 {
-		t.Errorf("Expected Lat 5, got %d from location 2", takeout.Locations[2].LatitudeE7)
+	if sourceLocations.Locations[2].Corrdinates.LatE7() != 5 {
+		t.Errorf("Expected Lat 5, got %d from location 2", sourceLocations.Locations[2].Corrdinates.LatE7())
 	}
-	if takeout.Locations[2].LongitudeE7 != 6 {
-		t.Errorf("Expected Long 6, got %d from location 2", takeout.Locations[2].LongitudeE7)
+	if sourceLocations.Locations[2].Corrdinates.LngE7() != 6 {
+		t.Errorf("Expected Long 6, got %d from location 2", sourceLocations.Locations[2].Corrdinates.LngE7())
 	}
 }
 

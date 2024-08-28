@@ -28,7 +28,7 @@ var (
 	ErrUnableToCreateCoordinates       = errors.New("Unable to create coordinates")
 )
 
-func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineTakeout, error) {
+func NewSourceLocationsFromGoogleTimeline(path string) (*SourceLocations, error) {
 	// Read the file
 	jsonFile, err := os.Open(path)
 	if err != nil {
@@ -56,8 +56,9 @@ func NewGoogleTimelineLocationsFromFile(path string) (*GoogleTimelineTakeout, er
 			err,
 		)
 	}
+	locationStore := takeout.ToLocationRecords()
 	// Convert the data into a SourceLocations struct
-	return takeout, nil
+	return locationStore, nil
 }
 
 func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
