@@ -74,7 +74,7 @@ func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
 			continue
 		}
 		locations[i] = LocationRecord{
-			Corrdinates: c,
+			Coordinates: c,
 			Time:        *parsedTime,
 		}
 	}

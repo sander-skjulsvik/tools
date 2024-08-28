@@ -117,8 +117,8 @@ func TestInterpolation(t *testing.T) {
 		}
 		locRecord2 = LocationRecord{
 			NewCorrdinatesE7(
-				locRecord1.Corrdinates.LatE7()+diff,
-				locRecord1.Corrdinates.LngE7()+diff,
+				locRecord1.Coordinates.LatE7()+diff,
+				locRecord1.Coordinates.LngE7()+diff,
 			),
 			*toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z"),
 		}
@@ -129,11 +129,11 @@ func TestInterpolation(t *testing.T) {
 		locRecord1, locRecord2, locRecord1.Time.Add(locRecord2.Time.Sub(locRecord1.Time)/2))
 
 	// Check the values of the records
-	expectedLatitude := locRecord1.Corrdinates.LatE7() + diff/2
+	expectedLatitude := locRecord1.Coordinates.LatE7() + diff/2
 	if calc_middle_1_2.LatE7() != expectedLatitude {
 		t.Errorf("Expected latitude %d, got %d", expectedLatitude, calc_middle_1_2.LatE7())
 	}
-	expectedLongitude := locRecord1.Corrdinates.LngE7() + diff/2
+	expectedLongitude := locRecord1.Coordinates.LngE7() + diff/2
 	if calc_middle_1_2.LngE7() != expectedLongitude {
 		t.Errorf("Expected longitude %d, got %d", expectedLongitude, calc_middle_1_2.LngE7())
 	}

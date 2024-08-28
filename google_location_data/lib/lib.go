@@ -6,12 +6,12 @@ import (
 	geo "github.com/kellydunn/golang-geo"
 )
 
-func interpolation(loc1, loc2 LocationRecord, time time.Time) Corrdinates {
+func interpolation(loc1, loc2 LocationRecord, time time.Time) Coordinates {
 	// Calculate the ratio of the time difference
 	timeRatio := timeRatio(loc1.Time, loc2.Time, time)
 	// Normalized ratio
-	loc1LatitudeE2, loc1LongitudeE2 := loc1.Corrdinates.GetE2Coord()
-	loc2LatitudeE2, loc2LongitudeE2 := loc2.Corrdinates.GetE2Coord()
+	loc1LatitudeE2, loc1LongitudeE2 := loc1.Coordinates.CoordE2()
+	loc2LatitudeE2, loc2LongitudeE2 := loc2.Coordinates.CoordE2()
 
 	p1 := geo.NewPoint(loc1LatitudeE2, loc1LongitudeE2)
 	p2 := geo.NewPoint(loc2LatitudeE2, loc2LongitudeE2)

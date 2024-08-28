@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -19,15 +20,15 @@ func main() {
 	case "list":
 		List(photoPath)
 	case "write":
-		Write(photoPath)
-		// List(photoPath)
-		pos := p.SearchExifData("GPSPosition")
-		fmt.Println(pos)
+	// 	Write(photoPath)
+	// 	// List(photoPath)
+	// 	pos := p.SearchExifData("GPSPosition")
+	// 	fmt.Println(pos)
 	case "search":
 		pos := p.SearchExifData("GPSPosition")
 		fmt.Println(pos)
 	case "applyGPS":
-		ApplyLocationData(photoPath, locationSource)
+		ApplyLocationData(photoPath, locationSource, true)
 	default:
 		fmt.Println("Invalid method")
 	}
@@ -49,36 +50,44 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 	}
 
 	for _, photo := range photos.Photos {
-		photoTime, err := photo.GetTime()
+		// If photo already has gps location pass
+
+		photoLocation, err := photo.GetLocationRecord()
+		switch {
+		case photoLocation == nil:
+			fmt.Printf("Skipping: %s\n", photo.Path)
+			continue
+		case errors.Is(err, lib.ErrGetLocationRecordGetTime):
+			// Empty time is error case
+			fmt.Printf("Unable to get time for %s\n", photo.Path)
+			continue
+		case errors.Is(err, lib.ErrGetLocationRecordGPSempty):
+			// Empty GPS is fine
+		case errors.Is(err, lib.ErrGetLocationRecordGPSstring):
+			// Failed to sting GPS is error
+			fmt.Printf("%v\n", err)
+			continue
+		case errors.Is(err, lib.ErrGetLocationRecordParsingGPS):
+			// Failed to parse gps is error
+			fmt.Printf("%v, for %s\n", err, photo.Path)
+			continue
+		}
+
+		photoTime, err := photo.GetDateTimeOriginal()
 		if err != nil {
 			fmt.Printf("Error getting photo time for %s, err: %v", photo.Path, err)
 			continue
 		}
-		location, err := locationStore.GetLocationByTime(photoTime)
-		switch err {
-		case nil:
-			fmt.Printf("Applying location data to %s: %v\n", photo.Path, location)
+		coordinates, err := locationStore.GetCoordinatesByTime(photoTime)
+		switch {
+		case err == nil || errors.Is(err, locationData.ErrTimeDiffMedium):
+			fmt.Printf("Applying location data to %s: %v\n", photo.Path, coordinates.CoordDMS())
 			if !dryRun {
-				err = photo.WriteExifData("GPSPosition", location.String())
-				if err != nil {
-					fmt.Printf("Error writing location data to %s: %v", photo.Path, err)
-				}
+				photo.WriteExifGPSLocation(coordinates)
 			}
-		case locationData.ErrTimeDiffMedium:
-			fmt.Printf("Time difference is medium, interpolating for %s\n", photo.Path)
-			if !dryRun {
-				err = photo.WriteExifData("GPSPosition", location.String())
-				if err != nil {
-					fmt.Printf("Error writing location data to %s: %v", photo.Path, err)
-				}
-			}
-
-		case locationData.ErrTimeDiffTooHigh:
-			fmt.Printf("Time difference is too high for %s\n", photo.Path)
-		case locationData.ErrNoLocation:
-			fmt.Printf("No location found for %s\n", photo.Path)
 		default:
-			fmt.Printf("Error getting location for %s: %v", photo.Path, err)
+			fmt.Printf("Error applying location: %s: %v\n", photo.Path, err)
+			continue
 		}
 
 	}
@@ -88,19 +97,11 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 func List(path string) {
 	data, err := lib.GetAllExifData(path)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
 	err = lib.PrintAllExifData(data)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error: %v\n", err)
 	}
-}
-
-func Write(path string) error {
-	err := lib.WriteExifDataToFile("GPSPosition", "61 deg 39' 50.71\" N, 9 deg 39' 57.94\" E", path)
-	if err != nil {
-		return fmt.Errorf("Error writing to file: %v", err)
-	}
-	return nil
 }

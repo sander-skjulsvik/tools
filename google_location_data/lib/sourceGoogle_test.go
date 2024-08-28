@@ -19,23 +19,23 @@ func TestNewGoogleTimelineLocationsFromFile(t *testing.T) {
 	}
 
 	// Check that the googleTimelineLocations struct has the correct locations
-	if sourceLocations.Locations[0].Corrdinates.LatE7() != 1 {
-		t.Errorf("Expected Lat 1, got %d from location 0", sourceLocations.Locations[0].Corrdinates.LatE7())
+	if sourceLocations.Locations[0].Coordinates.LatE7() != 1 {
+		t.Errorf("Expected Lat 1, got %d from location 0", sourceLocations.Locations[0].Coordinates.LatE7())
 	}
-	if sourceLocations.Locations[0].Corrdinates.LngE7() != 2 {
-		t.Errorf("Expected Long 2, got %d from location 0", sourceLocations.Locations[0].Corrdinates.LngE7())
+	if sourceLocations.Locations[0].Coordinates.LngE7() != 2 {
+		t.Errorf("Expected Long 2, got %d from location 0", sourceLocations.Locations[0].Coordinates.LngE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LatE7() != 3 {
-		t.Errorf("Expected Lat 3, got %d from location 1", sourceLocations.Locations[1].Corrdinates.LatE7())
+	if sourceLocations.Locations[1].Coordinates.LatE7() != 3 {
+		t.Errorf("Expected Lat 3, got %d from location 1", sourceLocations.Locations[1].Coordinates.LatE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LngE7() != 4 {
-		t.Errorf("Expected Long 4, got %d from location 1", sourceLocations.Locations[1].Corrdinates.LngE7())
+	if sourceLocations.Locations[1].Coordinates.LngE7() != 4 {
+		t.Errorf("Expected Long 4, got %d from location 1", sourceLocations.Locations[1].Coordinates.LngE7())
 	}
-	if sourceLocations.Locations[2].Corrdinates.LatE7() != 5 {
-		t.Errorf("Expected Lat 5, got %d from location 2", sourceLocations.Locations[2].Corrdinates.LatE7())
+	if sourceLocations.Locations[2].Coordinates.LatE7() != 5 {
+		t.Errorf("Expected Lat 5, got %d from location 2", sourceLocations.Locations[2].Coordinates.LatE7())
 	}
-	if sourceLocations.Locations[2].Corrdinates.LngE7() != 6 {
-		t.Errorf("Expected Long 6, got %d from location 2", sourceLocations.Locations[2].Corrdinates.LngE7())
+	if sourceLocations.Locations[2].Coordinates.LngE7() != 6 {
+		t.Errorf("Expected Long 6, got %d from location 2", sourceLocations.Locations[2].Coordinates.LngE7())
 	}
 }
 
@@ -65,17 +65,17 @@ func TestToLocationRecords(t *testing.T) {
 	}
 
 	// Check that the sourceLocations struct has the correct locations
-	if sourceLocations.Locations[0].Corrdinates.LatE7() != 633954185 {
-		t.Errorf("Expected first location latitude 633954185, got %d", sourceLocations.Locations[0].Corrdinates.LatE7())
+	if sourceLocations.Locations[0].Coordinates.LatE7() != 633954185 {
+		t.Errorf("Expected first location latitude 633954185, got %d", sourceLocations.Locations[0].Coordinates.LatE7())
 	}
-	if sourceLocations.Locations[0].Corrdinates.LngE7() != 103719669 {
-		t.Errorf("Expected first location longitude 103719669, got %d", sourceLocations.Locations[0].Corrdinates.LngE7())
+	if sourceLocations.Locations[0].Coordinates.LngE7() != 103719669 {
+		t.Errorf("Expected first location longitude 103719669, got %d", sourceLocations.Locations[0].Coordinates.LngE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LatE7() != 633954162 {
-		t.Errorf("Expected second location latitude 633954162, got %d", sourceLocations.Locations[1].Corrdinates.LatE7())
+	if sourceLocations.Locations[1].Coordinates.LatE7() != 633954162 {
+		t.Errorf("Expected second location latitude 633954162, got %d", sourceLocations.Locations[1].Coordinates.LatE7())
 	}
-	if sourceLocations.Locations[1].Corrdinates.LngE7() != 103720388 {
-		t.Errorf("Expected second location longitude 103720388, got %d", sourceLocations.Locations[1].Corrdinates.LngE7())
+	if sourceLocations.Locations[1].Coordinates.LngE7() != 103720388 {
+		t.Errorf("Expected second location longitude 103720388, got %d", sourceLocations.Locations[1].Coordinates.LngE7())
 	}
 
 	// Check that the sourceLocations struct has the correct timestamps

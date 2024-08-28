@@ -3,39 +3,40 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	nmea "github.com/adrianmo/go-nmea"
 	geo "github.com/kellydunn/golang-geo"
 )
 
-type Corrdinates struct {
+type Coordinates struct {
 	geo.Point
 }
 
-func NewCorrdinatesE2(lat, long float64) Corrdinates {
-	return Corrdinates{
+func NewCorrdinatesE2(lat, long float64) Coordinates {
+	return Coordinates{
 		Point: *geo.NewPoint(lat, long),
 	}
 }
 
-func NewCorrdinatesE7(lat, long int) Corrdinates {
-	return Corrdinates{
+func NewCorrdinatesE7(lat, long int) Coordinates {
+	return Coordinates{
 		Point: *geo.NewPoint(float64(lat)/1e7, float64(long)/1e7),
 	}
 }
 
-func NewCoordinatesFromGeopoint(point geo.Point) Corrdinates {
-	return Corrdinates{
+func NewCoordinatesFromGeopoint(point geo.Point) Coordinates {
+	return Coordinates{
 		Point: point,
 	}
 }
 
 var ErrInvalidDMS = errors.New("Invalid DMS")
 
-func NewCoordinatesFromDMS(latitude, longitude string) (Corrdinates, error) {
+func NewCoordinatesFromDMS(latitude, longitude string) (Coordinates, error) {
 	lat, err := nmea.ParseDMS(latitude)
 	if err != nil {
-		return Corrdinates{}, errors.Join(
+		return Coordinates{}, errors.Join(
 			ErrInvalidDMS,
 			fmt.Errorf("latitude: %s", latitude),
 			err,
@@ -43,7 +44,7 @@ func NewCoordinatesFromDMS(latitude, longitude string) (Corrdinates, error) {
 	}
 	lng, err := nmea.ParseDMS(longitude)
 	if err != nil {
-		return Corrdinates{}, errors.Join(
+		return Coordinates{}, errors.Join(
 			ErrInvalidDMS,
 			fmt.Errorf("longitude: %s", longitude),
 			err,
@@ -52,18 +53,34 @@ func NewCoordinatesFromDMS(latitude, longitude string) (Corrdinates, error) {
 	return NewCorrdinatesE2(lat, lng), nil
 }
 
-func (coordinate *Corrdinates) GetE2Coord() (lat float64, long float64) {
-	return coordinate.Lat(), coordinate.Lng()
+func (c *Coordinates) CoordE2() (lat float64, long float64) {
+	return c.Lat(), c.Lng()
 }
 
-func (coordinate *Corrdinates) GetE7Coord() (lat int, long int) {
-	return int(coordinate.Lat() * 1e7), int(coordinate.Lng() * 1e7)
+func (c *Coordinates) CoordE7() (lat int, long int) {
+	return int(c.Lat() * 1e7), int(c.Lng() * 1e7)
 }
 
-func (coordinate *Corrdinates) LatE7() int {
-	return int(coordinate.Point.Lat() * 1e7)
+func (c *Coordinates) LatE7() int {
+	return int(c.Point.Lat() * 1e7)
 }
 
-func (coordinate *Corrdinates) LngE7() int {
-	return int(coordinate.Point.Lng() * 1e7)
+func (c *Coordinates) LngE7() int {
+	return int(c.Point.Lng() * 1e7)
+}
+
+func (c *Coordinates) CoordDMS() string {
+	lat := nmea.FormatDMS(c.Lat())
+	lng := nmea.FormatDMS(c.Lng())
+	r := strings.Join(
+		[]string{lat, lng},
+		",",
+	)
+	if r == "" || r == "," {
+		panic(
+			fmt.Sprintf("coordDMS: returned empty string from: lat: %f, lng: %f", c.Lat(), c.Lng()),
+		)
+	}
+	return r
+
 }

@@ -55,11 +55,11 @@ It is implemented with 3 types of assumptions:
 - If the time between the photo and the location is medium we will assume we will attempt a linear interpolation between the two locations.
 - If the time is large we will return an error, and assume the user will have to provide the data themselves.
 */
-func (locStore *LocationStore) GetLocationByTime(time time.Time) (Corrdinates, error) {
+func (locStore *LocationStore) GetCoordinatesByTime(time time.Time) (Coordinates, error) {
 	// Find the closest location to the given time
 	closestLocationInd, err := locStore.SourceLocations.FindClosestLocation(time)
 	if err != nil {
-		return Corrdinates{}, err
+		return Coordinates{}, err
 	}
 	closestLocation := locStore.SourceLocations.Locations[closestLocationInd]
 
@@ -68,21 +68,21 @@ func (locStore *LocationStore) GetLocationByTime(time time.Time) (Corrdinates, e
 	switch {
 	case timeDiff <= locStore.LowTimeDiffThreshold:
 		// If the time difference is low, return the location
-		return closestLocation.Corrdinates, nil
+		return closestLocation.Coordinates, nil
 	case timeDiff <= locStore.MediumTimeDiffThreshold:
 		// If the time difference is medium, attempt linear interpolation
 		// Find the previous location
-		return closestLocation.Corrdinates, ErrTimeDiffMedium
+		return closestLocation.Coordinates, ErrTimeDiffMedium
 	case timeDiff <= locStore.HighTimeDiffThreshold:
 		// If the time difference is high, return an error
-		return closestLocation.Corrdinates, errors.Join(
+		return closestLocation.Coordinates, errors.Join(
 			ErrTimeDiffTooHigh,
 			fmt.Errorf("Diff: %s", timeDiff),
 		)
 	}
 
 	// Return the location
-	return Corrdinates{}, ErrNoLocation
+	return Coordinates{}, ErrNoLocation
 }
 
 type SourceLocations struct {
@@ -140,6 +140,6 @@ func (bt ByTime) Len() int {
 }
 
 type LocationRecord struct {
-	Corrdinates Corrdinates `json:"coordinates"`
+	Coordinates Coordinates `json:"coordinates"`
 	Time        time.Time   `json:"timestamp"`
 }

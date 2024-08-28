@@ -73,6 +73,10 @@ func (photo *Photo) SearchExifData(search string) interface{} {
 	return nil
 }
 
+func (p *Photo) WriteExifData(key, value string) error {
+	return WriteExifDataToFile(key, value, p.Path)
+}
+
 /*
 fuji date time format:  2023:11:07 11:46:28+01:00
 go layout: 2006:01:02 15:04:05-07:00
@@ -93,29 +97,50 @@ func (photo *Photo) GetDateTimeOriginal() (time.Time, error) {
 	return parsedTime, nil
 }
 
+var (
+	ErrGetLocationRecordGetTime    = errors.New("error getting dateTimeOriginal")
+	ErrGetLocationRecordGPSempty   = errors.New("GPS Position empty")
+	ErrGetLocationRecordGPSstring  = errors.New("GPS Position unable to string assert")
+	ErrGetLocationRecordParsingGPS = errors.New("error parsing GPSPosition")
+)
+
 func (photo *Photo) GetLocationRecord() (*locationData.LocationRecord, error) {
 	// Location
 	gpsPosition, ok := photo.SearchExifData("GPSPosition").(string)
 	if !ok {
-		return nil, errors.New("GPSPosition unable to string assert")
+		return nil, ErrGetLocationRecordGPSstring
 	}
 	if gpsPosition == "" {
-		return nil, errors.New("GPSPosition empty")
+		return nil, ErrGetLocationRecordGPSempty
 	}
 	latLong := strings.Split(gpsPosition, ",")
 	coords, err := locationData.NewCoordinatesFromDMS(latLong[0], latLong[1])
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing GPSPosition: %v", err)
+		return nil, errors.Join(
+			ErrGetLocationRecordParsingGPS,
+			fmt.Errorf("%v", err),
+		)
 	}
 
 	// Time
 	dateTimeOriginal, err := photo.GetDateTimeOriginal()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting dateTimeOriginal: %v", err)
+		return nil, errors.Join(
+			ErrGetLocationRecordGetTime,
+			err,
+		)
 	}
 
 	return &locationData.LocationRecord{
-		Corrdinates: coords,
+		Coordinates: coords,
 		Time:        dateTimeOriginal,
 	}, nil
+}
+
+func (p *Photo) WriteExifGPSLocation(coordinates locationData.Coordinates) {
+	p.WriteExifData(
+		"GPSPosition",
+		coordinates.CoordDMS(),
+	)
+
 }
