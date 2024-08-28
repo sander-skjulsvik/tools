@@ -9,7 +9,7 @@ import (
 func GetAllExifData(filePath string) ([]exiftool.FileMetadata, error) {
 	et, err := exiftool.NewExiftool()
 	if err != nil {
-		return nil, fmt.Errorf("Error when intializing: %v", err)
+		return nil, fmt.Errorf("error when initializing: %v", err)
 	}
 	defer et.Close()
 	return et.ExtractMetadata(filePath), nil
@@ -32,7 +32,7 @@ func PrintAllExifData(fileInfos []exiftool.FileMetadata) error {
 func WriteExifDataToFile(key, value, filePath string) error {
 	et, err := exiftool.NewExiftool()
 	if err != nil {
-		return fmt.Errorf("Error when intializing: %v", err)
+		return fmt.Errorf("error when initializing: %v", err)
 	}
 	defer et.Close()
 	currentData := et.ExtractMetadata(filePath)
@@ -42,7 +42,7 @@ func WriteExifDataToFile(key, value, filePath string) error {
 	et.WriteMetadata(currentData)
 	for _, d := range currentData {
 		if d.Err != nil {
-			return fmt.Errorf("Error concerning %v: %v\n", d.File, d.Err)
+			return fmt.Errorf("error concerning %v: %v", d.File, d.Err)
 		}
 	}
 

@@ -23,7 +23,7 @@ func NewPhotoCollectionFromPath(path string) (*PhotoCollection, error) {
 	collection := PhotoCollection{}
 	paths, err := files.GetAllFilesOfTypes(path, SUPPORTED_FILE_TYPES)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting files %v", err)
+		return nil, fmt.Errorf("error getting files %v", err)
 	}
 	for _, path := range paths {
 		collection.Photos = append(collection.Photos, *NewPhotoFromPath(path))
@@ -44,7 +44,7 @@ const (
 	DateTimeOriginal   = "DateTimeOriginal"
 	GPSPosition        = "GPSPosition"
 	GPSDateTime        = "GPSDateTime"
-	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00" // Atleast for fuji
+	ExifDateTimeLatout = "2006:01:02 15:04:05-07:00" // At least for fuji
 )
 
 // Photo methods
