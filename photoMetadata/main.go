@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
 	"github.com/sander-skjulsvik/tools/photoMetadata/lib"
 )
 
@@ -37,14 +36,14 @@ func main() {
 func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 	var (
 		photos        *lib.PhotoCollection
-		locationStore *locationData.LocationStore
+		locationStore *lib.LocationStore
 		err           error
 	)
 	photos, err = lib.NewPhotoCollectionFromPath(photoPath)
 	if err != nil {
 		return fmt.Errorf("Error creating photo collection: %v", err)
 	}
-	locationStore, err = locationData.NewLocationStoreFromGoogleTimelinePath(locationPath)
+	locationStore, err = lib.NewLocationStoreFromGoogleTimelinePath(locationPath)
 	if err != nil {
 		return fmt.Errorf("Error creating location store: %v", err)
 	}
@@ -80,7 +79,7 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 		}
 		coordinates, err := locationStore.GetCoordinatesByTime(photoTime)
 		switch {
-		case err == nil || errors.Is(err, locationData.ErrTimeDiffMedium):
+		case err == nil || errors.Is(err, lib.ErrTimeDiffMedium):
 			fmt.Printf("Applying location data to %s: %v\n", photo.Path, coordinates.CoordDMS())
 			if !dryRun {
 				photo.WriteExifGPSLocation(coordinates)
