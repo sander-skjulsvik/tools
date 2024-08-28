@@ -15,9 +15,9 @@ const (
 )
 
 var (
-	ErrTimeDiffTooHigh = errors.New("Time difference too high")
-	ErrTimeDiffMedium  = errors.New("Time difference medium")
-	ErrNoLocation      = errors.New("No location found")
+	ErrTimeDiffTooHigh = errors.New("time difference too high")
+	ErrTimeDiffMedium  = errors.New("time difference medium")
+	ErrNoLocation      = errors.New("no location found")
 )
 
 type LocationStore struct {
@@ -35,7 +35,7 @@ type LocationStore struct {
 func NewLocationStoreFromGoogleTimelinePath(path string) (*LocationStore, error) {
 	sourceLocations, err := locationData.NewSourceLocationsFromGoogleTimeline(path)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating source locations: %v", err)
+		return nil, fmt.Errorf("error creating source locations: %v", err)
 	}
 	l := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,

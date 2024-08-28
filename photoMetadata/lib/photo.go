@@ -91,7 +91,7 @@ func (photo *Photo) GetDateTimeOriginal() (time.Time, error) {
 	}
 	parsedTime, err := time.Parse(ExifDateTimeLatout, dateTimeOriginal)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Error parsing dateTimeOriginal: %v", err)
+		return time.Time{}, fmt.Errorf("error parsing dateTimeOriginal: %v", err)
 	}
 
 	return parsedTime, nil

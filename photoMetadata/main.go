@@ -13,19 +13,7 @@ func main() {
 	photoPath := os.Args[2]
 	locationSource := os.Args[3]
 
-	p := lib.Photo{Path: photoPath}
-
 	switch method {
-	case "list":
-		List(photoPath)
-	case "write":
-	// 	Write(photoPath)
-	// 	// List(photoPath)
-	// 	pos := p.SearchExifData("GPSPosition")
-	// 	fmt.Println(pos)
-	case "search":
-		pos := p.SearchExifData("GPSPosition")
-		fmt.Println(pos)
 	case "applyGPS":
 		ApplyLocationData(photoPath, locationSource, true)
 	default:
@@ -41,11 +29,11 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 	)
 	photos, err = lib.NewPhotoCollectionFromPath(photoPath)
 	if err != nil {
-		return fmt.Errorf("Error creating photo collection: %v", err)
+		return fmt.Errorf("error creating photo collection: %v", err)
 	}
 	locationStore, err = lib.NewLocationStoreFromGoogleTimelinePath(locationPath)
 	if err != nil {
-		return fmt.Errorf("Error creating location store: %v", err)
+		return fmt.Errorf("error creating location store: %v", err)
 	}
 
 	for _, photo := range photos.Photos {
@@ -91,16 +79,4 @@ func ApplyLocationData(photoPath, locationPath string, dryRun bool) error {
 
 	}
 	return nil
-}
-
-func List(path string) {
-	data, err := lib.GetAllExifData(path)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-	err = lib.PrintAllExifData(data)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-	}
 }
