@@ -21,7 +21,8 @@ require (
 require (
 	github.com/barasher/go-exiftool v1.10.0
 	github.com/deckarep/golang-set/v2 v2.6.0
+	github.com/jessevdk/go-flags v1.6.1
 	github.com/kellydunn/golang-geo v0.7.0
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
 	gotest.tools v2.2.0+incompatible
 )
