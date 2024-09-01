@@ -73,3 +73,16 @@ func (lr *LocationRecord) String() string {
 		lr.Time.String(),
 	)
 }
+
+func (lr *LocationRecord) Equal(other *LocationRecord) bool {
+	if lr.Coordinates.Point.Lat() != other.Coordinates.Point.Lat() {
+		return false
+	}
+	if lr.Coordinates.Point.Lng() != other.Coordinates.Point.Lng() {
+		return false
+	}
+	if lr.Time.Equal(other.Time) {
+		return false
+	}
+	return true
+}
