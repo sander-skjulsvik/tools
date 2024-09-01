@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/sander-skjulsvik/tools/libs/files"
 )
@@ -68,5 +69,54 @@ func TestNewPhotoCollectionFromPath(t *testing.T) {
 
 	if slices.Equal(calcFilePaths, expectedFilePaths) {
 		t.Errorf("Expected photo collection to have paths %v, got %v", expectedFilePaths, calcFilePaths)
+	}
+}
+
+func TestGetDateTimeOriginal(t *testing.T) {
+
+	p := Photo{
+		Path: filepath.Clean("testData/fuji_gps.RAF"),
+	}
+
+	pTime, err := p.GetDateTimeOriginal()
+	if err != nil {
+		t.Errorf("Failed to get date time for: %s, err: %v", p.Path, err)
+	}
+	// 2024:05:18 19:38:57+02:00
+	cest, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		panic(fmt.Errorf("failed to get cest time location: %v", err))
+	}
+	expected := time.Date(2024, 05, 18, 19, 38, 57, 0, cest)
+	if !expected.Equal(pTime) {
+		t.Errorf("Photo time not as expected: expected: %s, got: %s", expected, pTime)
+	}
+}
+
+func TestWriteExifGPSLocation(t *testing.T) {
+	testDir := "TestWriteExifGPSLocation"
+	_ = TestingSetup(testDir)
+	defer os.RemoveAll(testDir)
+	pWithGPS := Photo{
+		Path: filepath.Clean(filepath.Join(testDir, "fuji_gps.RAF")),
+	}
+	pNoGPS := Photo{
+		Path: filepath.Clean(filepath.Join(testDir, "fuji_no_gps.RAF")),
+	}
+
+	expectedLocation, err := pWithGPS.GetLocationRecord()
+	if err != nil {
+		t.Errorf("failed to get location record from photo with gps: %s", err)
+	}
+	pNoGPS.WriteExifGPSLocation(expectedLocation.Coordinates)
+	calcLocation, err := pNoGPS.GetLocationRecord()
+	if err != nil {
+		t.Errorf("failed to get location after writing location to the photo: %s", err)
+	}
+	if !expectedLocation.Equal(calcLocation) {
+		t.Errorf(
+			"expected location is not equal calculated location: calc: %s, expected: %s",
+			calcLocation, expectedLocation,
+		)
 	}
 }

@@ -16,6 +16,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 )
 
 require (
@@ -23,6 +24,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/kellydunn/golang-geo v0.7.0
+	github.com/otiai10/copy v1.14.0
 	golang.org/x/sys v0.21.0 // indirect
 	gotest.tools v2.2.0+incompatible
 )

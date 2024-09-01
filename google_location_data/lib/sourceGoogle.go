@@ -7,8 +7,6 @@ import (
 	"io"
 	"os"
 	"time"
-
-	toolsTime "github.com/sander-skjulsvik/tools/libs/time"
 )
 
 type GoogleTimelineLocation struct {
@@ -84,7 +82,7 @@ func (g *GoogleTimelineTakeout) ToLocationRecords() *SourceLocations {
 }
 
 func (g GoogleTimelineTakeout) ParseTime(timeStr string) (*time.Time, error) {
-	googleTimelineTimeLayout := toolsTime.RFC3339
+	googleTimelineTimeLayout := time.RFC3339
 	t, err := time.Parse(googleTimelineTimeLayout, timeStr)
 	if err != nil {
 		return nil, err

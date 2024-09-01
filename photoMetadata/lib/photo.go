@@ -41,10 +41,10 @@ func NewPhotoFromPath(path string) *Photo {
 }
 
 const (
-	DateTimeOriginal   = "DateTimeOriginal"
-	GPSPosition        = "GPSPosition"
-	GPSDateTime        = "GPSDateTime"
-	ExifDateTimeLatout = "2006:01:02 15:04:05" // At least for fuji (?)  "2006:01:02 15:04:05-07:00"
+	FUJI_RAW_TIME_EXIF_NAME = "SubSecDateTimeOriginal"
+	FUJI_RAW_TIME_LAYOUT    = "2006:01:02 15:04:05-07:00"
+	GPSDateTime             = "GPSDateTime"
+	GPSPosition             = "GPSPosition"
 )
 
 // Photo methods
@@ -80,14 +80,14 @@ fuji date time format:  2023:11:07 11:46:28+01:00
 go layout: 2006:01:02 15:04:05-07:00
 */
 func (photo *Photo) GetDateTimeOriginal() (time.Time, error) {
-	dateTimeOriginal, ok := photo.SearchExifData(DateTimeOriginal).(string)
+	dateTimeOriginal, ok := photo.SearchExifData(FUJI_RAW_TIME_EXIF_NAME).(string)
 	if !ok {
-		return time.Time{}, errors.New("dateTimeOriginal not found")
+		return time.Time{}, fmt.Errorf("%s not found", FUJI_RAW_TIME_EXIF_NAME)
 	}
 	if dateTimeOriginal == "" {
-		return time.Time{}, errors.New("dateTimeOriginal empty")
+		return time.Time{}, fmt.Errorf("%s empty", FUJI_RAW_TIME_EXIF_NAME)
 	}
-	parsedTime, err := time.Parse(ExifDateTimeLatout, dateTimeOriginal)
+	parsedTime, err := time.Parse("2006:01:02 15:04:05-07:00", dateTimeOriginal)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("error parsing dateTimeOriginal: %v", err)
 	}
