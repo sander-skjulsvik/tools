@@ -25,7 +25,7 @@ func NewCoordinatesE7(lat, long int) Coordinates {
 	}
 }
 
-func NewCoordinatesFromGeopoint(point geo.Point) Coordinates {
+func NewCoordinatesFromGeoPoint(point geo.Point) Coordinates {
 	return Coordinates{
 		Point: point,
 	}

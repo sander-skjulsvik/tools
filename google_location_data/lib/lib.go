@@ -21,7 +21,7 @@ func interpolation(loc1, loc2 LocationRecord, time time.Time) Coordinates {
 
 	p3 := p1.PointAtDistanceAndBearing(distance*timeRatio, bearing)
 
-	return NewCoordinatesFromGeopoint(*p3)
+	return NewCoordinatesFromGeoPoint(*p3)
 }
 
 func timeRatio(time1, time2, time time.Time) float64 {
