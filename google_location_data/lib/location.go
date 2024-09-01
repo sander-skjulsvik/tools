@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"sort"
 	"time"
 )
@@ -62,4 +63,13 @@ func (bt ByTime) Len() int {
 type LocationRecord struct {
 	Coordinates Coordinates `json:"coordinates"`
 	Time        time.Time   `json:"timestamp"`
+}
+
+func (lr *LocationRecord) String() string {
+	return fmt.Sprintf(
+		"Coordinates: lat: %f, lng: %f, Time: %s",
+		lr.Coordinates.Lat(),
+		lr.Coordinates.Lng(),
+		lr.Time.String(),
+	)
 }
