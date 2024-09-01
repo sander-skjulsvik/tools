@@ -84,9 +84,24 @@ func (c *Coordinates) LngE7() int {
 	return int(c.Point.Lng() * 1e7)
 }
 
-func (c *Coordinates) CoordDMS() string {
-	lat := nmea.FormatDMS(c.Lat())
-	lng := nmea.FormatDMS(c.Lng())
+func (c *Coordinates) LngFuji() string {
+	return CoordToFuji(c.Lng()) + " E"
+
+}
+
+func (c *Coordinates) LatFuji() string {
+	return CoordToFuji(c.Lat()) + " N"
+}
+
+func CoordToFuji(coordE2 float64) string {
+	formatted := nmea.FormatDMS(coordE2)
+	formatted = strings.ReplaceAll(formatted, string(nmea.Degrees), " deg")
+	return formatted
+}
+
+func (c *Coordinates) CoordFuji() string {
+	lat := c.LatFuji()
+	lng := c.LngFuji()
 	r := strings.Join(
 		[]string{lat, lng},
 		",",
@@ -98,4 +113,14 @@ func (c *Coordinates) CoordDMS() string {
 	}
 	return r
 
+}
+
+func (c *Coordinates) Equal(other Coordinates) bool {
+	if c.Lat() != other.Lat() {
+		return false
+	}
+	if c.Lng() != other.Lng() {
+		return false
+	}
+	return true
 }

@@ -87,12 +87,10 @@ func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) {
 	switch {
 	case err == nil || errors.Is(err, ErrTimeDiffMedium):
 		if !dryRun {
-			fmt.Printf("%s\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordDMS(), timediff)
-
+			fmt.Printf("%s\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordFuji(), timediff)
 			photo.WriteExifGPSLocation(coordinates)
 		} else {
-			fmt.Printf("%s,\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordDMS(), timediff)
-
+			fmt.Printf("%s,\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordFuji(), timediff)
 		}
 	default:
 		fmt.Printf("Error applying location: %s: %v\n", photo.Path, err)

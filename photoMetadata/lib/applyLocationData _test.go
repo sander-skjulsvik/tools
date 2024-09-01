@@ -49,11 +49,11 @@ func TestingSetup(path string) TestVars {
 			Locations: []lib.LocationRecord{
 				{
 					Coordinates: lib.NewCoordinatesE7(0, 0),
-					Time:        time.Date(2006, 01, 02, 15, 4, 0, 0, cest),
+					Time:        time.Date(2024, 05, 19, 17, 27, 48, 0, cest).Add(1 * time.Hour),
 				},
 				{
 					Coordinates: lib.NewCoordinatesE7(1, 1),
-					Time:        time.Date(2006, 01, 02, 16, 4, 0, 0, cest),
+					Time:        time.Date(2024, 05, 19, 17, 27, 48, 0, cest).Add(-1 * time.Hour),
 				},
 			},
 		},
@@ -74,7 +74,7 @@ func TestApplyLocationData(t *testing.T) {
 	// Test no alter photo with gps location
 	var noGPSPhoto Photo
 	for _, photo := range testVars.PhotoCollection.Photos {
-		if filepath.Base(photo.Path) == "fuji_gps.RAF" {
+		if filepath.Base(photo.Path) == "fuji_no_gps.RAF" {
 			noGPSPhoto = photo
 		}
 	}
@@ -86,13 +86,19 @@ func TestApplyLocationData(t *testing.T) {
 	if errors.Is(err, ErrGetLocationRecordParsingGPS) {
 		t.Errorf("Expected %s to not have location data, got: %v", noGPSPhoto.Path, err)
 	}
-	// actual check
+	// Actually testing
 	applyLocationData(noGPSPhoto, testVars.LocationStore, false)
-	location, err = noGPSPhoto.GetLocationRecord()
+	readLocation, err := noGPSPhoto.GetLocationRecord()
 	if err != nil {
 		t.Errorf(
 			"Failed to get location data after applying location data: path: %s, err: %s",
 			noGPSPhoto.Path, err,
 		)
 	}
+	midpoint := lib.NewCoordinatesE2(0.500019, 0.500019)
+
+	if !readLocation.Equal(&testVars.LocationStore.SourceLocations.Locations[0]) {
+		t.Errorf("written location record is not equal to read location record:\n\t written: %s, read: %s", readLocation, &testVars.LocationStore.SourceLocations.Locations[0])
+	}
+
 }

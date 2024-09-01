@@ -156,7 +156,14 @@ func (photo *Photo) GetLocationRecord() (*locationData.LocationRecord, error) {
 func (p *Photo) WriteExifGPSLocation(coordinates locationData.Coordinates) {
 	p.WriteExifData(
 		"GPSPosition",
-		coordinates.CoordDMS(),
+		coordinates.CoordFuji(),
 	)
-
+	p.WriteExifData(
+		FUJI_RAW_GPS_LONGITUDE,
+		coordinates.LngFuji(),
+	)
+	p.WriteExifData(
+		FUJI_RAW_GPS_LATITUDE,
+		coordinates.LatFuji(),
+	)
 }
