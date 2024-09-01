@@ -13,7 +13,7 @@ type Coordinates struct {
 	geo.Point
 }
 
-func NewCorrdinatesE2(lat, long float64) Coordinates {
+func NewCoordinatesE2(lat, long float64) Coordinates {
 	return Coordinates{
 		Point: *geo.NewPoint(lat, long),
 	}
@@ -49,7 +49,7 @@ func NewCoordinatesFromDMS(latitude, longitude string) (Coordinates, error) {
 		)
 	}
 
-	return NewCorrdinatesE2(lat, lng), nil
+	return NewCoordinatesE2(lat, lng), nil
 }
 
 func DMSCoordinateToE2(c string) (float64, error) {
