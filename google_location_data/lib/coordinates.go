@@ -34,23 +34,38 @@ func NewCoordinatesFromGeopoint(point geo.Point) Coordinates {
 var ErrInvalidDMS = errors.New("invalid DMS")
 
 func NewCoordinatesFromDMS(latitude, longitude string) (Coordinates, error) {
-	lat, err := nmea.ParseDMS(latitude)
+	lat, err := DMSCoordinateToE2(latitude)
 	if err != nil {
 		return Coordinates{}, errors.Join(
-			ErrInvalidDMS,
-			fmt.Errorf("latitude: %s", latitude),
+			fmt.Errorf("latitude"),
 			err,
 		)
 	}
-	lng, err := nmea.ParseDMS(longitude)
+	lng, err := DMSCoordinateToE2(longitude)
 	if err != nil {
 		return Coordinates{}, errors.Join(
-			ErrInvalidDMS,
-			fmt.Errorf("longitude: %s", longitude),
+			fmt.Errorf("longitude"),
 			err,
 		)
 	}
+
 	return NewCorrdinatesE2(lat, lng), nil
+}
+
+func DMSCoordinateToE2(c string) (float64, error) {
+	cleanC := strings.ReplaceAll(c, " deg", string(nmea.Degrees))
+	cleanC = strings.ReplaceAll(cleanC, "N", "")
+	cleanC = strings.ReplaceAll(cleanC, "E", "")
+
+	parsedC, err := nmea.ParseDMS(cleanC)
+
+	if err != nil {
+		return -1, errors.Join(
+			ErrInvalidDMS,
+			err,
+		)
+	}
+	return parsedC, nil
 }
 
 func (c *Coordinates) CoordE2() (lat float64, long float64) {

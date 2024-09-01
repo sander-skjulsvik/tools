@@ -3,7 +3,6 @@ package lib
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
@@ -43,6 +42,8 @@ func NewPhotoFromPath(path string) *Photo {
 const (
 	FUJI_RAW_TIME_EXIF_NAME = "SubSecDateTimeOriginal"
 	FUJI_RAW_TIME_LAYOUT    = "2006:01:02 15:04:05-07:00"
+	FUJI_RAW_GPS_LATITUDE   = "GPSLatitude"
+	FUJI_RAW_GPS_LONGITUDE  = "GPSLongitude"
 	GPSDateTime             = "GPSDateTime"
 	GPSPosition             = "GPSPosition"
 )
@@ -104,15 +105,32 @@ var (
 
 func (photo *Photo) GetLocationRecord() (*locationData.LocationRecord, error) {
 	// Location
-	gpsPosition, ok := photo.SearchExifData("GPSPosition").(string)
+	lat, ok := photo.SearchExifData(FUJI_RAW_GPS_LATITUDE).(string)
 	if !ok {
-		return nil, ErrGetLocationRecordGPSstring
+		return nil, errors.Join(
+			errors.New("failed to get latitude"), ErrGetLocationRecordGPSstring,
+		)
 	}
-	if gpsPosition == "" {
-		return nil, ErrGetLocationRecordGPSempty
+	if lat == "" {
+		errors.Join(
+			errors.New("failed to get latitude"),
+			ErrGetLocationRecordGPSempty,
+		)
 	}
-	latLong := strings.Split(gpsPosition, ",")
-	coords, err := locationData.NewCoordinatesFromDMS(latLong[0], latLong[1])
+	lng, ok := photo.SearchExifData(FUJI_RAW_GPS_LONGITUDE).(string)
+	if !ok {
+		return nil, errors.Join(
+			errors.New("failed to get longitude"), ErrGetLocationRecordGPSstring,
+		)
+	}
+	if lng == "" {
+		errors.Join(
+			errors.New("failed to get longitude"),
+			ErrGetLocationRecordGPSempty,
+		)
+	}
+
+	coords, err := locationData.NewCoordinatesFromDMS(lat, lng)
 	if err != nil {
 		return nil, errors.Join(
 			ErrGetLocationRecordParsingGPS,
