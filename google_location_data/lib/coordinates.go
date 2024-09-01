@@ -72,6 +72,10 @@ func (c *Coordinates) CoordE2() (lat float64, long float64) {
 	return c.Lat(), c.Lng()
 }
 
+func (c *Coordinates) String() string {
+	return fmt.Sprintf("Lat: %f, Lng: %f", c.Lat(), c.Lng())
+}
+
 func (c *Coordinates) CoordE7() (lat int, long int) {
 	return int(c.Lat() * 1e7), int(c.Lng() * 1e7)
 }

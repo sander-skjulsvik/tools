@@ -86,6 +86,7 @@ func TestApplyLocationData(t *testing.T) {
 	if errors.Is(err, ErrGetLocationRecordParsingGPS) {
 		t.Errorf("Expected %s to not have location data, got: %v", noGPSPhoto.Path, err)
 	}
+
 	// Actually testing
 	applyLocationData(noGPSPhoto, testVars.LocationStore, false)
 	readLocation, err := noGPSPhoto.GetLocationRecord()
@@ -95,10 +96,10 @@ func TestApplyLocationData(t *testing.T) {
 			noGPSPhoto.Path, err,
 		)
 	}
-	midpoint := lib.NewCoordinatesE2(0.500019, 0.500019)
 
-	if !readLocation.Equal(&testVars.LocationStore.SourceLocations.Locations[0]) {
-		t.Errorf("written location record is not equal to read location record:\n\t written: %s, read: %s", readLocation, &testVars.LocationStore.SourceLocations.Locations[0])
+	midpoint := lib.NewCoordinatesE2(0.500019, 0.500019)
+	if !readLocation.Coordinates.Equal(midpoint) {
+		t.Errorf("written location record is not equal to midpoint coordinate:\n\t midpoint: %s, read: %s", midpoint.String(), readLocation.Coordinates.String())
 	}
 
 }
