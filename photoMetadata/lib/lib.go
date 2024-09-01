@@ -6,42 +6,56 @@ import (
 	"sync"
 )
 
-func ApplyLocationData(photoPath, locationPath string, threads int, dryRun bool) error {
+type ApplyLocationOpts struct {
+	DryRun       bool
+	LocationPath string
+	PhotoPath    string
+	Threads      int
+	Verbose      bool
+}
+
+func ApplyLocationsData(opts ApplyLocationOpts) error {
 	var (
 		photos        *PhotoCollection
 		locationStore *LocationStore
 		err           error
 	)
+
 	fmt.Println("Loading photo collection")
-	photos, err = NewPhotoCollectionFromPath(photoPath)
+	photos, err = NewPhotoCollectionFromPath(opts.PhotoPath)
 	if err != nil {
 		return fmt.Errorf("error creating photo collection: %v", err)
 	}
-	fmt.Printf("\tFound %d photos\n", len(photos.Photos))
+	if opts.Verbose {
+		fmt.Printf("\tFound %d photos\n", len(photos.Photos))
+	}
+
 	fmt.Println("Loading location store")
-	locationStore, err = NewLocationStoreFromGoogleTimelinePath(locationPath)
+	locationStore, err = NewLocationStoreFromGoogleTimelinePath(opts.LocationPath)
 	if err != nil {
 		return fmt.Errorf("error creating location store: %v", err)
 	}
-
-	fmt.Printf("\tFound %d location record\n", len(locationStore.SourceLocations.Locations))
-	sem := make(chan int, threads)
+	if opts.Verbose {
+		fmt.Printf("\tFound %d location record\n", len(locationStore.SourceLocations.Locations))
+	}
+	sem := make(chan int, opts.Threads)
 	var wg sync.WaitGroup
 	for _, photo := range photos.Photos {
 		wg.Add(1)
 		sem <- 1
-		go applyLocationData(photo, *locationStore, dryRun, sem, &wg)
-
+		go func() {
+			defer func() {
+				wg.Done()
+				<-sem
+			}()
+			applyLocationData(photo, *locationStore, opts.DryRun)
+		}()
 	}
 	wg.Wait()
 	return nil
 }
 
-func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool, sem chan int, wg *sync.WaitGroup) {
-	defer func() {
-		wg.Done()
-		<-sem
-	}()
+func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) {
 	// If photo already has gps location pass
 	photoLocation, err := photo.GetLocationRecord()
 	switch {
