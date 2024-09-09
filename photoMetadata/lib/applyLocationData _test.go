@@ -11,6 +11,7 @@ import (
 	"github.com/otiai10/copy"
 	"github.com/sander-skjulsvik/tools/google_location_data/lib"
 	"github.com/sander-skjulsvik/tools/libs/files"
+	timelib "github.com/sander-skjulsvik/tools/libs/time"
 )
 
 type TestVars struct {
