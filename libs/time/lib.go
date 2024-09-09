@@ -1,6 +1,7 @@
 package time
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -23,4 +24,15 @@ func ParseTimeNoErrorRFC3339(value string) *time.Time {
 		)
 	}
 	return &t
+}
+
+func GetCEST() *time.Location {
+	cest, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		panic(errors.Join(
+			fmt.Errorf("failed to get CEST"),
+			err,
+		))
+	}
+	return cest
 }

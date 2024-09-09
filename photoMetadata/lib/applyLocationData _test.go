@@ -36,10 +36,7 @@ func TestingSetup(path string) TestVars {
 		panic(fmt.Errorf("NewTestVars failed to create photoCollection: %v", err))
 	}
 
-	cest, err := time.LoadLocation("Europe/Berlin")
-	if err != nil {
-		panic(fmt.Errorf("failed to get cest time location: %v", err))
-	}
+	cest := timelib.GetCEST()
 
 	ls := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,
