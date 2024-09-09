@@ -95,8 +95,7 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 			ErrTimeDiffTooHigh,
 			fmt.Errorf("diff: %s", timeDiff),
 		)
+	default:
+		return locationData.Coordinates{}, timeDiff, ErrNoLocation
 	}
-
-	// Return the location
-	return locationData.Coordinates{}, timeDiff, ErrNoLocation
 }
