@@ -73,7 +73,22 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 	case timeDiff <= locStore.MediumTimeDiffThreshold:
 		// If the time difference is medium, attempt linear interpolation
 		// Find the previous location
-		return closestLocation.Coordinates, timeDiff, ErrTimeDiffMedium
+		// TODO: need to do interpolation here.
+		var interCoord locationData.Coordinates
+		if timeDiff < 0 {
+			interCoord = locationData.Interpolation(
+				locStore.SourceLocations.Locations[closestLocationInd],
+				locStore.SourceLocations.Locations[closestLocationInd+1],
+				qTime,
+			)
+		} else {
+			interCoord = locationData.Interpolation(
+				locStore.SourceLocations.Locations[closestLocationInd-1],
+				locStore.SourceLocations.Locations[closestLocationInd],
+				qTime,
+			)
+		}
+		return interCoord, timeDiff, ErrTimeDiffMedium
 	case timeDiff <= locStore.HighTimeDiffThreshold:
 		// If the time difference is high, return an error
 		return closestLocation.Coordinates, timeDiff, errors.Join(
