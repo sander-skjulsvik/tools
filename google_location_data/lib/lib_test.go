@@ -125,7 +125,7 @@ func TestInterpolation(t *testing.T) {
 	)
 
 	// In the middle
-	calc_middle_1_2 := interpolation(
+	calc_middle_1_2 := Interpolation(
 		locRecord1, locRecord2, locRecord1.Time.Add(locRecord2.Time.Sub(locRecord1.Time)/2))
 
 	// Check the values of the records

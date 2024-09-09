@@ -6,7 +6,7 @@ import (
 	geo "github.com/kellydunn/golang-geo"
 )
 
-func interpolation(loc1, loc2 LocationRecord, time time.Time) Coordinates {
+func Interpolation(loc1, loc2 LocationRecord, time time.Time) Coordinates {
 	// Calculate the ratio of the time difference
 	timeRatio := timeRatio(loc1.Time, loc2.Time, time)
 	// Normalized ratio
