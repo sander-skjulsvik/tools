@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"math"
 	"testing"
 
 	toolsTime "github.com/sander-skjulsvik/tools/libs/time"

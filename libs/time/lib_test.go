@@ -43,9 +43,9 @@ func TestGetMidpointByWeights(t *testing.T) {
 func TestTimeRatio(t *testing.T) {
 	// Setup
 	var (
-		time1 = *toolsTime.ParseTimeNoErrorRFC3339("2021-01-01T12:00:00Z")
-		time2 = *toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z")
-		time3 = *toolsTime.ParseTimeNoErrorRFC3339("2021-01-03T12:00:00Z")
+		time1 = time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC)
+		time2 = time.Date(2021, 1, 2, 12, 0, 0, 0, time.UTC)
+		time3 = time.Date(2021, 1, 3, 12, 0, 0, 0, time.UTC)
 	)
 
 	// In the middle
