@@ -37,6 +37,10 @@ func GetCEST() *time.Location {
 	return cest
 }
 
-func GetMidpointByWeights(t1, t2 time.Time, weight float64) time.Time {
+func GetMidpointByRatio(t1, t2 time.Time, weight float64) time.Time {
 	return t1.Add(time.Duration(int64(float64(t2.Sub(t1)) * weight)))
+}
+
+func GetTimeRatio(time1, time2, time time.Time) float64 {
+	return time.Sub(time1).Seconds() / time2.Sub(time1).Seconds()
 }

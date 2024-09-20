@@ -23,7 +23,3 @@ func Interpolation(loc1, loc2 LocationRecord, time time.Time) Coordinates {
 
 	return NewCoordinatesFromGeoPoint(*p3)
 }
-
-func timeRatio(time1, time2, time time.Time) float64 {
-	return time.Sub(time1).Seconds() / time2.Sub(time1).Seconds()
-}

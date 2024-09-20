@@ -99,5 +99,4 @@ func TestApplyLocationData(t *testing.T) {
 	if !readLocation.Coordinates.Equal(midpoint) {
 		t.Errorf("written location record is not equal to midpoint coordinate:\n\t midpoint: %s, read: %s", midpoint.String(), readLocation.Coordinates.String())
 	}
-
 }
