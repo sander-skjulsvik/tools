@@ -120,8 +120,6 @@ func TestInterpolation(t *testing.T) {
 
 		}
 	)
-
-
 	// In the middle
 	{
 		tt := toolsTime.GetMidpointByRatio(locRecord1.Time, locRecord2.Time, 0.5)
