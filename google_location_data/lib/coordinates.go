@@ -3,6 +3,7 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	nmea "github.com/adrianmo/go-nmea"
@@ -127,4 +128,20 @@ func (c *Coordinates) Equal(other Coordinates) bool {
 		return false
 	}
 	return true
+}
+
+
+func (c *Coordinates) EqualDelta(other Coordinates, acceptedDelta float64) bool {
+
+	if math.Abs(c.Lat() - other.Lat()) >= acceptedDelta {
+		return false
+	}
+	if math.Abs(c.Lng() - other.Lng()) >= acceptedDelta {
+		return false
+	}
+	return true
+}
+
+func  (c *Coordinates) EqualDeltaE7(other Coordinates) bool {
+	return c.EqualDelta(other, 1e-7)
 }
