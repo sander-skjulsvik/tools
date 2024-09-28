@@ -58,10 +58,7 @@ It is implemented with 3 types of assumptions:
 // TODO: Add test for this function
 func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationData.Coordinates, time.Duration, error) {
 	// Find the closest location to the given time
-	closestLocationInd, err := locStore.SourceLocations.FindClosestLocation(qTime)
-	if err != nil {
-		return locationData.Coordinates{}, 0, err
-	}
+	closestLocationInd, otherLocationInd := locStore.SourceLocations.FindClosestLocations(qTime)
 	closestLocation := locStore.SourceLocations.Locations[closestLocationInd]
 
 	// Check the time difference
@@ -69,26 +66,16 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 	switch {
 	case timeDiff <= locStore.LowTimeDiffThreshold:
 		// If the time difference is low, return the location
-		return closestLocation.Coordinates, timeDiff, nil
+		return closestLocation.Coordinates, timeDiff.Abs(), nil
 	case timeDiff <= locStore.MediumTimeDiffThreshold:
 		// If the time difference is medium, attempt linear interpolation
 		// Find the previous location
-		// TODO: need to do interpolation here.
-		var interCoord locationData.Coordinates
-		if timeDiff < 0 {
-			interCoord = locationData.Interpolation(
-				locStore.SourceLocations.Locations[closestLocationInd],
-				locStore.SourceLocations.Locations[closestLocationInd+1],
-				qTime,
-			)
-		} else {
-			interCoord = locationData.Interpolation(
-				locStore.SourceLocations.Locations[closestLocationInd-1],
-				locStore.SourceLocations.Locations[closestLocationInd],
-				qTime,
-			)
-		}
-		return interCoord, timeDiff, ErrTimeDiffMedium
+		interCoord := locationData.Interpolation(
+			locStore.SourceLocations.Locations[closestLocationInd],
+			locStore.SourceLocations.Locations[otherLocationInd],
+			qTime,
+		)
+		return interCoord, timeDiff.Abs(), ErrTimeDiffMedium
 	case timeDiff <= locStore.HighTimeDiffThreshold:
 		// If the time difference is high, return an error
 		return closestLocation.Coordinates, timeDiff, errors.Join(
@@ -96,6 +83,6 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 			fmt.Errorf("diff: %s", timeDiff),
 		)
 	default:
-		return locationData.Coordinates{}, timeDiff, ErrNoLocation
+		return locationData.Coordinates{}, timeDiff.Abs(), ErrNoLocation
 	}
 }
