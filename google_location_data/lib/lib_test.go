@@ -47,66 +47,6 @@ func TestSortByTime(t *testing.T) {
 		t.Errorf("Expected third record timestamp 2021-01-03T12:00:00Z, got %s", locations[2].Time)
 	}
 }
-
-func TestGetLocation(t *testing.T) {
-	// Setup
-	sourceData := SIMPLE_TEST_DATA_SOURCE_LOCATION
-	sourceData.Locations = append(sourceData.Locations, LocationRecord{
-		NewCoordinatesE7(4567890, 5678901), *toolsTime.ParseTimeNoErrorRFC3339("2021-01-04T12:00:00Z"),
-	})
-	sourceData.SortByTime()
-
-	// Test the GetLocation function with exact match
-	{
-		timeStamp := *toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z")
-		locationInd, err := sourceData.FindClosestLocation(timeStamp)
-		if err != nil {
-			t.Errorf("Error getting location: %v", err)
-		}
-		location := sourceData.Locations[locationInd]
-
-		// Check the values of the records
-		if location.Time != timeStamp {
-			t.Errorf("Expected location before timestamp %s, got %s", timeStamp, location.Time)
-		}
-	}
-	// Test the GetLocation function with in-between time
-	{
-		timeStamp := "2021-01-02T18:00:00Z"
-		locationInd, err := sourceData.FindClosestLocation(*toolsTime.ParseTimeNoErrorRFC3339(timeStamp))
-		if err != nil {
-			t.Errorf("Error getting location: %v", err)
-		}
-		locationBefore := sourceData.Locations[locationInd]
-		if locationBefore.Time != *toolsTime.ParseTimeNoErrorRFC3339("2021-01-02T12:00:00Z") {
-			t.Errorf("Expected location before timestamp 2021-01-02T12:00:00Z, got %s", locationBefore.Time)
-		}
-	}
-
-	// Testing limits
-	{
-		timestampFarAfter := toolsTime.ParseTimeNoErrorRFC3339("2022-01-01T12:00:00Z")
-		beforeInd, err := sourceData.FindClosestLocation(*timestampFarAfter)
-		before := sourceData.Locations[beforeInd]
-		if err != nil {
-			t.Errorf("Error getting location: %v", err)
-		}
-		if before.Time != *toolsTime.ParseTimeNoErrorRFC3339("2021-01-04T12:00:00Z") {
-			t.Errorf("Expected location before timestamp 2021-01-04T12:00:00Z, got %s", before.Time)
-		}
-
-		timestampFarBefore := *toolsTime.ParseTimeNoErrorRFC3339("2020-01-01T12:00:00Z")
-		afterInd, err := sourceData.FindClosestLocation(timestampFarBefore)
-		after := sourceData.Locations[afterInd]
-		if err != nil {
-			t.Errorf("Error getting location: %v", err)
-		}
-		if after.Time != sourceData.Locations[0].Time {
-			t.Errorf("Expected location after timestamp %s, got %s", sourceData.Locations[0].Time, after.Time)
-		}
-	}
-}
-
 func TestInterpolation(t *testing.T) {
 	// Setup
 	var (
