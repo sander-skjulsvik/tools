@@ -82,8 +82,8 @@ func TestGetCoordiantesByTime(t *testing.T) {
 	checkResult(c0, t0.Add(upperThreshold), upperThreshold, 0.2, ErrTimeDiffMedium)
 
 	// Over low threshold and outside of data
-	checkResult(locationData.Coordinates{}, t0.Add(-(LOW_TIME_DIFF_THRESHOLD + majorTimeDelta)), 0, 1e-7, ErrQuerytimeIsOutsideOfRange)
-	checkResult(locationData.Coordinates{}, t2.Add(LOW_TIME_DIFF_THRESHOLD+majorTimeDelta), 0, 1e-7, ErrQuerytimeIsOutsideOfRange)
+	checkResult(locationData.Coordinates{}, t0.Add(-(LOW_TIME_DIFF_THRESHOLD + majorTimeDelta)), 0, 1e-7, ErrQueryTimeIsOutsideOfRange)
+	checkResult(locationData.Coordinates{}, t2.Add(LOW_TIME_DIFF_THRESHOLD+majorTimeDelta), 0, 1e-7, ErrQueryTimeIsOutsideOfRange)
 
 	// Over high threshold
 	// checkResult(locationData.Coordinates{}, t1.Add(HIGH_TIME_DIFF_THRESHOLD+majorTimeDelta), HIGH_TIME_DIFF_THRESHOLD+majorTimeDelta, 1e-7, ErrTimeDiffTooHigh)

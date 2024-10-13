@@ -18,7 +18,7 @@ var (
 	ErrTimeDiffTooHigh           = errors.New("time difference too high")
 	ErrTimeDiffMedium            = errors.New("time difference medium")
 	ErrNoLocation                = errors.New("no location found")
-	ErrQuerytimeIsOutsideOfRange = errors.New("query time is outside of range")
+	ErrQueryTimeIsOutsideOfRange = errors.New("query time is outside of range")
 )
 
 type LocationStore struct {
@@ -68,13 +68,13 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 	// If qTime is significantly before the earlies location record, return error
 	case timeDiff > locStore.LowTimeDiffThreshold && qTime.Before(locStore.SourceLocations.Locations[0].Time):
 		return locationData.Coordinates{}, 0, errors.Join(
-			ErrQuerytimeIsOutsideOfRange,
+			ErrQueryTimeIsOutsideOfRange,
 			fmt.Errorf("before"),
 		)
 	// If qTime is significantly after the latest location record, return error
 	case timeDiff > locStore.LowTimeDiffThreshold && qTime.After(locStore.SourceLocations.Locations[len(locStore.SourceLocations.Locations)-1].Time):
 		return locationData.Coordinates{}, 0, errors.Join(
-			ErrQuerytimeIsOutsideOfRange,
+			ErrQueryTimeIsOutsideOfRange,
 			fmt.Errorf("after"),
 		)
 	case timeDiff <= locStore.LowTimeDiffThreshold:
