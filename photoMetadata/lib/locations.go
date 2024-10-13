@@ -15,9 +15,10 @@ const (
 )
 
 var (
-	ErrTimeDiffTooHigh = errors.New("time difference too high")
-	ErrTimeDiffMedium  = errors.New("time difference medium")
-	ErrNoLocation      = errors.New("no location found")
+	ErrTimeDiffTooHigh           = errors.New("time difference too high")
+	ErrTimeDiffMedium            = errors.New("time difference medium")
+	ErrNoLocation                = errors.New("no location found")
+	ErrQuerytimeIsOutsideOfRange = errors.New("query time is outside of range")
 )
 
 type LocationStore struct {
@@ -62,11 +63,23 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 	closestLocation := locStore.SourceLocations.Locations[closestLocationInd]
 
 	// Check the time difference
-	timeDiff := qTime.Sub(closestLocation.Time)
+	timeDiff := qTime.Sub(closestLocation.Time).Abs()
 	switch {
+	// If qTime is significantly before the earlies location record, return error
+	case timeDiff > locStore.LowTimeDiffThreshold && qTime.Before(locStore.SourceLocations.Locations[0].Time):
+		return locationData.Coordinates{}, 0, errors.Join(
+			ErrQuerytimeIsOutsideOfRange,
+			fmt.Errorf("before"),
+		)
+	// If qTime is significantly after the latest location record, return error
+	case timeDiff > locStore.LowTimeDiffThreshold && qTime.After(locStore.SourceLocations.Locations[len(locStore.SourceLocations.Locations)-1].Time):
+		return locationData.Coordinates{}, 0, errors.Join(
+			ErrQuerytimeIsOutsideOfRange,
+			fmt.Errorf("after"),
+		)
 	case timeDiff <= locStore.LowTimeDiffThreshold:
 		// If the time difference is low, return the location
-		return closestLocation.Coordinates, timeDiff.Abs(), nil
+		return closestLocation.Coordinates, timeDiff, nil
 	case timeDiff <= locStore.MediumTimeDiffThreshold:
 		// If the time difference is medium, attempt linear interpolation
 		// Find the previous location
@@ -75,7 +88,7 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 			locStore.SourceLocations.Locations[otherLocationInd],
 			qTime,
 		)
-		return interCoord, timeDiff.Abs(), ErrTimeDiffMedium
+		return interCoord, timeDiff, ErrTimeDiffMedium
 	case timeDiff <= locStore.HighTimeDiffThreshold:
 		// If the time difference is high, return an error
 		return closestLocation.Coordinates, timeDiff, errors.Join(
@@ -83,6 +96,6 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 			fmt.Errorf("diff: %s", timeDiff),
 		)
 	default:
-		return locationData.Coordinates{}, timeDiff.Abs(), ErrNoLocation
+		return locationData.Coordinates{}, timeDiff, ErrNoLocation
 	}
 }
