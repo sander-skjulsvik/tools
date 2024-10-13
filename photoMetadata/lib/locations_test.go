@@ -9,22 +9,21 @@ import (
 	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
 )
 
-func TestGetCoordiantesByTime(t *testing.T) {
+func TestGetCoordinatesByTime(t *testing.T) {
 	var (
 		minorTimeDelta = time.Millisecond
 		majorTimeDelta = time.Second
 		t0             = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 		c0             = locationData.NewCoordinatesE2(0, 0)
-		t1             = t0.Add(HIGH_TIME_DIFF_THRESHOLD + majorTimeDelta)
+		t1             = t0.Add(5*MEDIUM_TIME_DIFF_THRESHOLD + majorTimeDelta)
 		c1             = locationData.NewCoordinatesE2(1, 1)
-		t2             = t0.Add(HIGH_TIME_DIFF_THRESHOLD * 4)
+		t2             = t0.Add(MEDIUM_TIME_DIFF_THRESHOLD * 10)
 		c2             = locationData.NewCoordinatesE2(2, 2)
 	)
 
 	ls := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,
 		MediumTimeDiffThreshold: MEDIUM_TIME_DIFF_THRESHOLD,
-		HighTimeDiffThreshold:   HIGH_TIME_DIFF_THRESHOLD,
 		SourceLocations: locationData.SourceLocations{
 			Locations: []locationData.LocationRecord{
 				{
@@ -75,17 +74,16 @@ func TestGetCoordiantesByTime(t *testing.T) {
 	checkResult(c1, t1.Add(minorTimeDelta), minorTimeDelta, 1e-7, nil)
 	checkResult(c1, t1.Add(LOW_TIME_DIFF_THRESHOLD-minorTimeDelta), LOW_TIME_DIFF_THRESHOLD-minorTimeDelta, 1e-7, nil)
 
-	// Over low threshold but under high threshold
-	lowerThreshold := LOW_TIME_DIFF_THRESHOLD + minorTimeDelta
-	checkResult(c0, t0.Add(lowerThreshold), lowerThreshold, 0.05, ErrTimeDiffMedium)
-	upperThreshold := MEDIUM_TIME_DIFF_THRESHOLD - minorTimeDelta
-	checkResult(c0, t0.Add(upperThreshold), upperThreshold, 0.2, ErrTimeDiffMedium)
+	// In the medium range
+	lowerDelta := LOW_TIME_DIFF_THRESHOLD + minorTimeDelta
+	upperDelta := MEDIUM_TIME_DIFF_THRESHOLD - minorTimeDelta
+	checkResult(c0, t0.Add(lowerDelta), lowerDelta, 0.051, ErrTimeDiffMedium)
+	checkResult(c1, t1.Add(-lowerDelta), lowerDelta, 0.2, ErrTimeDiffMedium)
+
+	checkResult(c0, t0.Add(upperDelta), upperDelta, 0.21, ErrTimeDiffMedium)
 
 	// Over low threshold and outside of data
 	checkResult(locationData.Coordinates{}, t0.Add(-(LOW_TIME_DIFF_THRESHOLD + majorTimeDelta)), 0, 1e-7, ErrQueryTimeIsOutsideOfRange)
 	checkResult(locationData.Coordinates{}, t2.Add(LOW_TIME_DIFF_THRESHOLD+majorTimeDelta), 0, 1e-7, ErrQueryTimeIsOutsideOfRange)
-
-	// Over high threshold
-	// checkResult(locationData.Coordinates{}, t1.Add(HIGH_TIME_DIFF_THRESHOLD+majorTimeDelta), HIGH_TIME_DIFF_THRESHOLD+majorTimeDelta, 1e-7, ErrTimeDiffTooHigh)
 
 }

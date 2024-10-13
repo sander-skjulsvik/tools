@@ -11,7 +11,6 @@ import (
 const (
 	LOW_TIME_DIFF_THRESHOLD    = 30 * time.Minute
 	MEDIUM_TIME_DIFF_THRESHOLD = 2 * time.Hour
-	HIGH_TIME_DIFF_THRESHOLD   = 12 * time.Hour
 )
 
 var (
@@ -29,8 +28,6 @@ type LocationStore struct {
 	LowTimeDiffThreshold time.Duration
 	// Medium time difference threshold
 	MediumTimeDiffThreshold time.Duration
-	// High time difference threshold
-	HighTimeDiffThreshold time.Duration
 }
 
 func NewLocationStoreFromGoogleTimelinePath(path string) (*LocationStore, error) {
@@ -41,7 +38,6 @@ func NewLocationStoreFromGoogleTimelinePath(path string) (*LocationStore, error)
 	l := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,
 		MediumTimeDiffThreshold: MEDIUM_TIME_DIFF_THRESHOLD,
-		HighTimeDiffThreshold:   HIGH_TIME_DIFF_THRESHOLD,
 		SourceLocations:         *sourceLocations,
 	}
 	return &l, nil
@@ -89,7 +85,7 @@ func (locStore *LocationStore) GetCoordinatesByTime(qTime time.Time) (locationDa
 			qTime,
 		)
 		return interCoord, timeDiff, ErrTimeDiffMedium
-	case timeDiff <= locStore.HighTimeDiffThreshold:
+	case timeDiff > locStore.MediumTimeDiffThreshold:
 		// If the time difference is high, return an error
 		return closestLocation.Coordinates, timeDiff, errors.Join(
 			ErrTimeDiffTooHigh,
