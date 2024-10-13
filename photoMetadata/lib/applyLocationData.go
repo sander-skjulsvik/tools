@@ -55,7 +55,7 @@ func ApplyLocationsData(opts ApplyLocationOpts) error {
 	return nil
 }
 
-func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) {
+func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) bool {
 	// If photo already has gps location pass
 	photoLocation, err := photo.GetLocationRecord()
 	switch {
@@ -64,36 +64,37 @@ func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) {
 	case errors.Is(err, ErrGetLocationRecordGetTime):
 		// Empty time is error case
 		fmt.Printf("Unable to get time for %s\n", photo.Path)
-		return
+		return false
 	case errors.Is(err, ErrGetLocationRecordGPSempty):
 		// Empty GPS is fine
 	case errors.Is(err, ErrGetLocationRecordGPSstring):
 		// Failed to sting GPS is error
 		fmt.Printf("%v\n", err)
-		return
+		return false
 	case errors.Is(err, ErrGetLocationRecordParsingGPS):
 		// Failed to parse gps is error
 		fmt.Printf("%v, for %s\n", err, photo.Path)
-		return
+		return false
 	}
 
 	photoTime, err := photo.GetDateTimeOriginal()
 	if err != nil {
 		fmt.Printf("Error getting photo time for %s, err: %v", photo.Path, err)
-		return
+		return false
 	}
 
-	coordinates, timediff, err := locationStore.GetCoordinatesByTime(photoTime)
+	coordinates, timeDiff, err := locationStore.GetCoordinatesByTime(photoTime)
 	switch {
 	case err == nil || errors.Is(err, ErrTimeDiffMedium):
-		if !dryRun {
-			fmt.Printf("%s\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordFuji(), timediff)
-			photo.WriteExifGPSLocation(coordinates)
+		if dryRun {
+			fmt.Printf("%s,\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordFuji(), timeDiff)
 		} else {
-			fmt.Printf("%s,\t%v,\ttime diff: %s\n", photo.Path, coordinates.CoordFuji(), timediff)
+			fmt.Printf("%s\t%v,\ttime diff: %s, writing\n", photo.Path, coordinates.CoordFuji(), timeDiff)
+			photo.WriteExifGPSLocation(coordinates)
 		}
+		return true
 	default:
 		fmt.Printf("Error applying location: %s: %v\n", photo.Path, err)
-		return
+		return false
 	}
 }

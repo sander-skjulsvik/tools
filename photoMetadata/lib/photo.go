@@ -96,6 +96,16 @@ func (photo *Photo) GetDateTimeOriginal() (time.Time, error) {
 	return parsedTime, nil
 }
 
+func (photo *Photo) WriteDateTime(t time.Time) error {
+	err := photo.WriteExifData(FUJI_RAW_TIME_EXIF_NAME, t.Format(FUJI_RAW_TIME_LAYOUT))
+	if err != nil {
+		return errors.Join(
+			err, fmt.Errorf("failed to write time to photo: %s", photo.Path),
+		)
+	}
+	return nil
+}
+
 var (
 	ErrGetLocationRecordGetTime    = errors.New("error getting dateTimeOriginal")
 	ErrGetLocationRecordGPSempty   = errors.New("GPS Position empty")

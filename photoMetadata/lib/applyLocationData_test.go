@@ -11,6 +11,7 @@ import (
 	"github.com/otiai10/copy"
 	"github.com/sander-skjulsvik/tools/google_location_data/lib"
 	"github.com/sander-skjulsvik/tools/libs/files"
+	testing2 "github.com/sander-skjulsvik/tools/libs/testing"
 	timelib "github.com/sander-skjulsvik/tools/libs/time"
 )
 
@@ -18,6 +19,15 @@ type TestVars struct {
 	PhotoCollection *PhotoCollection
 	LocationStore   LocationStore
 }
+
+var (
+	cest           = timelib.GetCEST()
+	minorTimeDelta = 1 * time.Second
+	t0             = time.Date(2024, 05, 19, 17, 27, 48, 0, cest)
+	c0             = lib.NewCoordinatesE7(0, 0)
+	t1             = t0.Add(MEDIUM_TIME_DIFF_THRESHOLD - minorTimeDelta)
+	c1             = lib.NewCoordinatesE7(1, 1)
+)
 
 func TestingSetup(path string) TestVars {
 	sourceData := filepath.Clean("./testData/")
@@ -37,21 +47,27 @@ func TestingSetup(path string) TestVars {
 		panic(fmt.Errorf("NewTestVars failed to create photoCollection: %v", err))
 	}
 
-	cest := timelib.GetCEST()
+	var (
+		cest           = timelib.GetCEST()
+		minorTimeDelta = 1 * time.Second
+		t0             = time.Date(2024, 05, 19, 17, 27, 48, 0, cest)
+		c0             = lib.NewCoordinatesE7(0, 0)
+		t1             = t0.Add(MEDIUM_TIME_DIFF_THRESHOLD - minorTimeDelta)
+		c1             = lib.NewCoordinatesE7(1, 1)
+	)
 
 	ls := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,
 		MediumTimeDiffThreshold: MEDIUM_TIME_DIFF_THRESHOLD,
-		HighTimeDiffThreshold:   HIGH_TIME_DIFF_THRESHOLD,
 		SourceLocations: lib.SourceLocations{
 			Locations: []lib.LocationRecord{
 				{
-					Coordinates: lib.NewCoordinatesE7(0, 0),
-					Time:        time.Date(2024, 05, 19, 17, 27, 48, 0, cest).Add(1 * time.Hour),
+					Coordinates: c0,
+					Time:        t0,
 				},
 				{
-					Coordinates: lib.NewCoordinatesE7(1, 1),
-					Time:        time.Date(2024, 05, 19, 17, 27, 48, 0, cest).Add(-1 * time.Hour),
+					Coordinates: c1,
+					Time:        t1,
 				},
 			},
 		},
@@ -82,14 +98,26 @@ func TestApplyLocationData(t *testing.T) {
 		t.Errorf("Expected %s to not have location data, got: %s", noGPSPhoto.Path, location)
 	}
 	if errors.Is(err, ErrGetLocationRecordParsingGPS) {
-		t.Errorf("Expected %s to not have location data, got: %v", noGPSPhoto.Path, err)
+		testing2.ErrorfStackTrace(t,
+			"Expected %s to not have location data, got: %v",
+			noGPSPhoto.Path, err,
+		)
+	}
+
+	// Apply midpoint time to photo
+	timeMidpoint := t0.Add(t1.Sub(t0) / 2)
+	fmt.Printf("Midpoint: %s\n", timeMidpoint)
+	if err := noGPSPhoto.WriteDateTime(timeMidpoint); err != nil {
+		panic(err)
 	}
 
 	// Actually testing
-	applyLocationData(noGPSPhoto, testVars.LocationStore, false)
+	if ok := applyLocationData(noGPSPhoto, testVars.LocationStore, false); !ok {
+		t.Fatal("failed to apply location data")
+	}
 	readLocation, err := noGPSPhoto.GetLocationRecord()
 	if err != nil {
-		t.Errorf(
+		testing2.ErrorfStackTrace(t,
 			"Failed to get location data after applying location data: path: %s, err: %s",
 			noGPSPhoto.Path, err,
 		)
@@ -97,6 +125,9 @@ func TestApplyLocationData(t *testing.T) {
 
 	midpoint := lib.NewCoordinatesE2(0.500019, 0.500019)
 	if !readLocation.Coordinates.Equal(midpoint) {
-		t.Errorf("written location record is not equal to midpoint coordinate:\n\t midpoint: %s, read: %s", midpoint.String(), readLocation.Coordinates.String())
+		testing2.ErrorfStackTrace(t,
+			"written location record is not equal to midpoint coordinate:\n\t midpoint: %s, read: %s",
+			midpoint.String(), readLocation.Coordinates.String(),
+		)
 	}
 }
