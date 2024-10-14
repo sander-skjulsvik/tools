@@ -11,6 +11,7 @@ import (
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
 	"github.com/sander-skjulsvik/tools/dupes/lib/test"
+	"github.com/sander-skjulsvik/tools/libs/files"
 	"github.com/sander-skjulsvik/tools/libs/progressbar"
 	"gotest.tools/assert"
 )
@@ -36,7 +37,7 @@ func TestGetFiles(t *testing.T) {
 			workDir + "folder/" + "folder/" + "nesting_file_name",
 		}
 		for _, file := range expectedFilePaths {
-			test.CreateFile(file, "nesting_file_content")
+			files.CreateFile(file, "nesting_file_content")
 		}
 		calculatedFilePaths := make(chan string)
 		go getFiles(workDir, calculatedFilePaths)
@@ -59,8 +60,8 @@ func TestGetFiles(t *testing.T) {
 	{
 		workDir := baseDir + "test_emtpy_file/"
 		os.MkdirAll(filepath.Clean(workDir), 0o755)
-		test.CreateEmptyFile(workDir + "empty_file")
-		test.CreateFile(workDir+"not_empty_file", "not_empty_file")
+		files.CreateEmptyFile(workDir + "empty_file")
+		files.CreateFile(workDir+"not_empty_file", "not_empty_file")
 
 		calculatedFilePaths := make(chan string)
 		go getFiles(workDir, calculatedFilePaths)
@@ -77,7 +78,7 @@ func TestGetFiles(t *testing.T) {
 	{
 		workDir := baseDir + "test_symlink/"
 		os.MkdirAll(filepath.Clean(workDir), 0o755)
-		test.CreateEmptyFile(workDir + "source_file")
+		files.CreateEmptyFile(workDir + "source_file")
 		os.Symlink(workDir+"source_file", workDir+"destination_file")
 
 		calculatedFilePaths := make(chan string)
@@ -107,9 +108,9 @@ func TestGetFiles(t *testing.T) {
 	{
 		workDir := baseDir + "sleeping_before_consuming/"
 		os.MkdirAll(filepath.Clean(workDir), 0o755)
-		test.CreateFile(filepath.Join(workDir, "1"), "1")
-		test.CreateFile(filepath.Join(workDir, "2"), "2")
-		test.CreateFile(filepath.Join(workDir, "3"), "3")
+		files.CreateFile(filepath.Join(workDir, "1"), "1")
+		files.CreateFile(filepath.Join(workDir, "2"), "2")
+		files.CreateFile(filepath.Join(workDir, "3"), "3")
 
 		calculatedFilePathsChan := make(chan string)
 		calculatedFilePathsSlice := []string{}
@@ -135,7 +136,7 @@ func TestAppendFileTreadSafe(t *testing.T) {
 
 		path := workDir + "single_file"
 		lock := sync.Mutex{}
-		test.CreateFile(path, "I am a single file")
+		files.CreateFile(path, "I am a single file")
 		expectedHash := "1be3d7cfb6df7ff4ed6235a70603dc3ee8fa636a5e44a5c2ea8ffbcd38b41bd0"
 
 		appendFileTreadSafe(&d, filepath.Clean(path), &lock)
@@ -165,7 +166,7 @@ func TestAppendFileTreadSafe(t *testing.T) {
 		d := common.NewDupes()
 		n := 1000
 		for i := 0; i < n; i++ {
-			test.CreateFile(workDir+strconv.Itoa(i), "I am one of many files")
+			files.CreateFile(workDir+strconv.Itoa(i), "I am one of many files")
 		}
 
 		lock := sync.Mutex{}
@@ -203,7 +204,7 @@ func TestAppendFileTreadSafe(t *testing.T) {
 		d := common.NewDupes()
 		n := 1000
 		for i := 0; i < n; i++ {
-			test.CreateFile(workDir+strconv.Itoa(i), "I am one of many files: "+strconv.Itoa(i))
+			files.CreateFile(workDir+strconv.Itoa(i), "I am one of many files: "+strconv.Itoa(i))
 		}
 
 		lock := sync.Mutex{}
@@ -235,7 +236,7 @@ func TestAppendFileTreadSafe(t *testing.T) {
 			lock := sync.Mutex{}
 			n := 10
 			for i := 0; i < n; i++ {
-				test.CreateFile(workDir+strconv.Itoa(i), "")
+				files.CreateFile(workDir+strconv.Itoa(i), "")
 			}
 			expectedHash := "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -268,7 +269,7 @@ func TestProcessFiles(t *testing.T) {
 		os.MkdirAll(filepath.Clean(workDir), 0o755)
 		path := workDir + "single_file"
 
-		test.CreateFile(path, "I am a single file")
+		files.CreateFile(path, "I am a single file")
 		expectedHash := "1be3d7cfb6df7ff4ed6235a70603dc3ee8fa636a5e44a5c2ea8ffbcd38b41bd0"
 
 		filePaths := make(chan string)
@@ -324,7 +325,7 @@ func TestProcessFiles(t *testing.T) {
 			Content: "I am not unique",
 		}}
 		for _, file := range expectedFilePaths {
-			test.CreateFile(file.Path, file.Content)
+			files.CreateFile(file.Path, file.Content)
 		}
 
 		filePaths := make(chan string)
@@ -383,7 +384,7 @@ func TestProcessFilesNConsumers(t *testing.T) {
 		os.MkdirAll(filepath.Clean(workDir), 0o755)
 		path := workDir + "single_file"
 
-		test.CreateFile(path, "I am a single file")
+		files.CreateFile(path, "I am a single file")
 		expectedHash := "1be3d7cfb6df7ff4ed6235a70603dc3ee8fa636a5e44a5c2ea8ffbcd38b41bd0"
 
 		filePaths := make(chan string)
@@ -441,7 +442,7 @@ func TestProcessFilesNConsumers(t *testing.T) {
 			Content: "I am not unique",
 		}}
 		for _, file := range expectedFilePaths {
-			test.CreateFile(file.Path, file.Content)
+			files.CreateFile(file.Path, file.Content)
 		}
 
 		filePaths := make(chan string)
