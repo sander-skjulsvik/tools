@@ -47,15 +47,6 @@ func TestingSetup(path string) TestVars {
 		panic(fmt.Errorf("NewTestVars failed to create photoCollection: %v", err))
 	}
 
-	var (
-		cest           = timelib.GetCEST()
-		minorTimeDelta = 1 * time.Second
-		t0             = time.Date(2024, 05, 19, 17, 27, 48, 0, cest)
-		c0             = lib.NewCoordinatesE7(0, 0)
-		t1             = t0.Add(MEDIUM_TIME_DIFF_THRESHOLD - minorTimeDelta)
-		c1             = lib.NewCoordinatesE7(1, 1)
-	)
-
 	ls := LocationStore{
 		LowTimeDiffThreshold:    LOW_TIME_DIFF_THRESHOLD,
 		MediumTimeDiffThreshold: MEDIUM_TIME_DIFF_THRESHOLD,
@@ -103,14 +94,22 @@ func TestApplyLocationData(t *testing.T) {
 			noGPSPhoto.Path, err,
 		)
 	}
-
+	origTime, err := noGPSPhoto.GetDateTimeOriginal()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("photo time Orig: %s\n", origTime)
 	// Apply midpoint time to photo
 	timeMidpoint := t0.Add(t1.Sub(t0) / 2)
 	fmt.Printf("Midpoint: %s\n", timeMidpoint)
 	if err := noGPSPhoto.WriteDateTime(timeMidpoint); err != nil {
 		panic(err)
 	}
-
+	alteredTime, err := noGPSPhoto.GetDateTimeOriginal()
+	if err != nil {
+		panic("here1")
+	}
+	fmt.Printf("photo time altered: %s\n", alteredTime)
 	// Actually testing
 	if ok := applyLocationData(noGPSPhoto, testVars.LocationStore, false); !ok {
 		t.Fatal("failed to apply location data")

@@ -83,6 +83,13 @@ func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) bo
 		return false
 	}
 
+	photoTimeStr := photoTime
+	fmt.Printf("photo time: \n\t%s\n\tt0: %s\n\tt1: %s\n",
+		photoTimeStr, 
+		locationStore.SourceLocations.Locations[0].Time,
+		locationStore.SourceLocations.Locations[1].Time,
+	)
+
 	coordinates, timeDiff, err := locationStore.GetCoordinatesByTime(photoTime)
 	switch {
 	case err == nil || errors.Is(err, ErrTimeDiffMedium):
