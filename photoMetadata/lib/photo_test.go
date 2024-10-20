@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/sander-skjulsvik/tools/libs/files"
+	"gotest.tools/assert"
 )
 
 func TestNewPhotoCollectionFromPath(t *testing.T) {
@@ -119,4 +120,27 @@ func TestWriteExifGPSLocation(t *testing.T) {
 			calcLocation, expectedLocation,
 		)
 	}
+}
+
+func TestWriteDatetime(t *testing.T) {
+	testDir := "TestWriteDatetimeDir"
+	testVars := TestingSetup(testDir)
+	defer testVars.Clean()
+
+	photo := testVars.PhotoCollection.Photos[0]
+
+	origTime, err := photo.GetDateTimeOriginal()
+	assert.NilError(t, err, fmt.Sprintf("failed to get orignal time from photo: %s", photo.Path))
+	targetTime := origTime.Add(1 * time.Hour)
+
+	photo.WriteDateTime(targetTime)
+	calcTime, err := photo.GetDateTimeOriginal()
+	assert.NilError(t, err, fmt.Sprintf("failed to get changed time from photo: %s", photo.Path))
+	if targetTime.Equal(origTime) {
+		t.Fatal("Target time and orig time is the same")
+	}
+	assert.Equal(
+		t, targetTime, calcTime,
+		fmt.Errorf("targetTime != calcTime\n\tcalcTime: %s\n\ttargetTime: %s\n\torigTime: %s", 
+		calcTime, targetTime, origTime))
 }

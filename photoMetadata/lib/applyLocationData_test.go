@@ -18,6 +18,21 @@ import (
 type TestVars struct {
 	PhotoCollection *PhotoCollection
 	LocationStore   LocationStore
+	testDirectory   string
+}
+
+func (tv *TestVars) GetNoGpsPhotos() []Photo {
+	var noGPSPhotos []Photo
+	for _, photo := range tv.PhotoCollection.Photos {
+		if filepath.Base(photo.Path) == "fuji_no_gps.RAF" {
+			noGPSPhotos = append(noGPSPhotos, photo)
+		}
+	}
+	return noGPSPhotos
+}
+
+func (tv *TestVars) Clean() {
+	os.RemoveAll(tv.testDirectory)
 }
 
 var (
@@ -68,6 +83,7 @@ func TestingSetup(path string) TestVars {
 	return TestVars{
 		PhotoCollection: pc,
 		LocationStore:   ls,
+		testDirectory:   path,
 	}
 }
 
@@ -77,12 +93,8 @@ func TestApplyLocationData(t *testing.T) {
 	testVars := TestingSetup(dir)
 
 	// Test no alter photo with gps location
-	var noGPSPhoto Photo
-	for _, photo := range testVars.PhotoCollection.Photos {
-		if filepath.Base(photo.Path) == "fuji_no_gps.RAF" {
-			noGPSPhoto = photo
-		}
-	}
+	noGPSPhoto := testVars.GetNoGpsPhotos()[0]
+
 	// Sanity check
 	location, err := noGPSPhoto.GetLocationRecord()
 	if location != nil {
@@ -109,7 +121,8 @@ func TestApplyLocationData(t *testing.T) {
 	if err != nil {
 		panic("here1")
 	}
-	fmt.Printf("photo time altered: %s\n", alteredTime)
+	alteredTimeString := alteredTime.String()
+	fmt.Printf("photo time altered: %s\n", alteredTimeString)
 	// Actually testing
 	if ok := applyLocationData(noGPSPhoto, testVars.LocationStore, false); !ok {
 		t.Fatal("failed to apply location data")
