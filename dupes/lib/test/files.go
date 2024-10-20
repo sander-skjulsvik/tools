@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+
+	files "github.com/sander-skjulsvik/tools/libs/files"
 )
 
 type Folder struct {
@@ -28,7 +30,7 @@ func (folder *Folder) Generate(parents string) {
 	// Create files in the folder
 	for _, file := range folder.Files {
 		filePath := filepath.Join(parents, folder.Name, file.Name)
-		CreateFile(filePath, file.Content)
+		files.CreateFile(filePath, file.Content)
 	}
 
 	// Create child folders
