@@ -88,9 +88,9 @@ func TestingSetup(path string) TestVars {
 }
 
 func TestApplyLocationData(t *testing.T) {
-	dir := "TestApplyLocationData"
-	defer os.RemoveAll(dir)
+	dir := "TestApplyLocationDataDir"
 	testVars := TestingSetup(dir)
+	defer testVars.Clean()
 
 	// Test no alter photo with gps location
 	noGPSPhoto := testVars.GetNoGpsPhotos()[0]
@@ -120,6 +120,9 @@ func TestApplyLocationData(t *testing.T) {
 	alteredTime, err := noGPSPhoto.GetDateTimeOriginal()
 	if err != nil {
 		panic("here1")
+	}
+	if !alteredTime.Equal(timeMidpoint) {
+		t.Fatal("Failed to write midtime to file")
 	}
 	alteredTimeString := alteredTime.String()
 	fmt.Printf("photo time altered: %s\n", alteredTimeString)

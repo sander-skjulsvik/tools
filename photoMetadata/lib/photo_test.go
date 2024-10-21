@@ -139,6 +139,10 @@ func TestWriteDatetime(t *testing.T) {
 	if targetTime.Equal(origTime) {
 		t.Fatal("Target time and orig time is the same")
 	}
+	if !targetTime.Equal(calcTime) {
+		t.Fatalf("targetTime != calcTime\n\tcalcTime: %s\n\ttargetTime: %s\n\torigTime: %s", 
+		calcTime, targetTime, origTime)
+	}
 	assert.Equal(
 		t, targetTime, calcTime,
 		fmt.Errorf("targetTime != calcTime\n\tcalcTime: %s\n\ttargetTime: %s\n\torigTime: %s", 
