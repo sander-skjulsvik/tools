@@ -6,7 +6,58 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 )
+
+func CreateEmptyFileWithFolders(path string) error {
+	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("unable to create folders: %w", err)
+	}
+	return CreateEmptyFile(path)
+}
+
+func CreateEmptyFile(path string) error {
+	d := []byte("")
+	return os.WriteFile(filepath.Clean(path), d, 0o644)
+}
+
+func CreateFile(path, content string) error {
+	return os.WriteFile(filepath.Clean(path), []byte(content), 0o644)
+}
+
+/*
+GetAllFilesOfTypes returns all files of the specified types in the specified directory.
+filetypes needs to be prefixed with a dot. E.g. ".txt", and lowercase.
+*/
+func GetAllFilesOfTypes(path string, fileTypes []string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(
+		path,
+		func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return fmt.Errorf("unable to walk path: %w", err)
+			}
+			if info == nil {
+				return fmt.Errorf("file info is nil")
+			}
+			if info.IsDir() {
+				return nil
+			}
+			p := strings.ToLower(filepath.Ext(path))
+			b := slices.Contains(fileTypes, p)
+			if b {
+				files = append(files, path)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get all files of type: %w", err)
+	}
+	return files, nil
+}
 
 func GetNumberOfFiles(path string) (int, error) {
 	n := 0
