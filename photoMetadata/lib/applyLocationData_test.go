@@ -122,13 +122,14 @@ func TestApplyLocationData(t *testing.T) {
 		panic("here1")
 	}
 	if !alteredTime.Equal(timeMidpoint) {
-		t.Fatal("Failed to write midtime to file")
+		testing2.ErrorfStackTrace(t, "Failed to write midtime to file")
 	}
 	alteredTimeString := alteredTime.String()
 	fmt.Printf("photo time altered: %s\n", alteredTimeString)
+
 	// Actually testing
 	if ok := applyLocationData(noGPSPhoto, testVars.LocationStore, false); !ok {
-		t.Fatal("failed to apply location data")
+		testing2.ErrorfStackTrace(t, "failed to apply locaction data")
 	}
 	readLocation, err := noGPSPhoto.GetLocationRecord()
 	if err != nil {

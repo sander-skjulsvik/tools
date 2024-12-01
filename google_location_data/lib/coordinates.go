@@ -37,17 +37,11 @@ var ErrInvalidDMS = errors.New("invalid DMS")
 func NewCoordinatesFromDMS(latitude, longitude string) (Coordinates, error) {
 	lat, err := DMSCoordinateToE2(latitude)
 	if err != nil {
-		return Coordinates{}, errors.Join(
-			fmt.Errorf("latitude"),
-			err,
-		)
+		return Coordinates{}, fmt.Errorf("latitude: %w",  err)
 	}
 	lng, err := DMSCoordinateToE2(longitude)
 	if err != nil {
-		return Coordinates{}, errors.Join(
-			fmt.Errorf("longitude"),
-			err,
-		)
+		return Coordinates{}, fmt.Errorf("longitude: %w",  err)
 	}
 
 	return NewCoordinatesE2(lat, lng), nil

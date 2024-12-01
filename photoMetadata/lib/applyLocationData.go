@@ -8,6 +8,7 @@ import (
 
 type ApplyLocationOpts struct {
 	DryRun       bool
+	OverWrite    bool
 	LocationPath string
 	PhotoPath    string
 	Threads      int
@@ -48,44 +49,40 @@ func ApplyLocationsData(opts ApplyLocationOpts) error {
 				wg.Done()
 				<-sem
 			}()
-			applyLocationData(photo, *locationStore, opts.DryRun)
+			applyLocationData(photo, *locationStore, opts.DryRun, opts.OverWrite)
 		}()
 	}
 	wg.Wait()
 	return nil
 }
 
-func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) bool {
-	// If photo already has gps location pass
-	photoLocation, err := photo.GetLocationRecord()
-	switch {
-	case photoLocation == nil:
-		// fmt.Printf("Found no location: %s\n", photo.Path)
-	case errors.Is(err, ErrGetLocationRecordGetTime):
-		// Empty time is error case
-		fmt.Printf("Unable to get time for %s\n", photo.Path)
-		return false
-	case errors.Is(err, ErrGetLocationRecordGPSempty):
-		// Empty GPS is fine
-	case errors.Is(err, ErrGetLocationRecordGPSstring):
-		// Failed to sting GPS is error
-		fmt.Printf("%v\n", err)
-		return false
-	case errors.Is(err, ErrGetLocationRecordParsingGPS):
-		// Failed to parse gps is error
-		fmt.Printf("%v, for %s\n", err, photo.Path)
-		return false
+var ErrApplyLocationDataReadGpsError = fmt.Errorf("parsing existing gps reocrd")
+
+func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool, overWrite bool) (bool, error) {
+	if !overWrite {
+		photoLocation, err := photo.GetLocationRecord()
+		switch {
+		case errors.Is(err, ErrGetLocationRecordGetTime):
+			// Empty time is error case
+			fmt.Printf("Unable to get time for %s\n", photo.Path)
+			return false, fmt.Errorf("%w: %w", ErrApplyLocationDataReadGpsError, err)
+		case errors.Is(err, ErrGetLocationRecordParsingGPS):
+			// Failed to parse gps is error
+			return false, fmt.Errorf("%w: %w", ErrApplyLocationDataReadGpsError, err)
+		}
+		if photoLocation != nil {
+			return false, nil
+		}
 	}
 
 	photoTime, err := photo.GetDateTimeOriginal()
 	if err != nil {
-		fmt.Printf("Error getting photo time for %s, err: %v", photo.Path, err)
-		return false
+		return false, fmt.Errorf("getting photo time for %s, err: %w", photo.Path, err)
 	}
 
 	photoTimeStr := photoTime
 	fmt.Printf("photo time: \n\t%s\n\tt0: %s\n\tt1: %s\n",
-		photoTimeStr, 
+		photoTimeStr,
 		locationStore.SourceLocations.Locations[0].Time,
 		locationStore.SourceLocations.Locations[1].Time,
 	)
@@ -99,9 +96,9 @@ func applyLocationData(photo Photo, locationStore LocationStore, dryRun bool) bo
 			fmt.Printf("%s\t%v,\ttime diff: %s, writing\n", photo.Path, coordinates.CoordFuji(), timeDiff)
 			photo.WriteExifGPSLocation(coordinates)
 		}
-		return true
+		return true, nil
 	default:
-		fmt.Printf("Error applying location: %s: %v\n", photo.Path, err)
-		return false
+		
+		return false, fmt.Errorf("applying location: %s: %w", photo.Path, err)
 	}
 }

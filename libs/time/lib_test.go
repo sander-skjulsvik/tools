@@ -9,7 +9,7 @@ import (
 )
 
 func TestParseTimeNoErrorRFC3339(t *testing.T) {
-	s := "2006-01-02T15:04:05Z07:00"
+	s := "2006-01-02T15:04:05Z"
 	ParseTimeNoErrorRFC3339(s)
 }
 

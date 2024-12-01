@@ -108,7 +108,6 @@ func (photo *Photo) WriteDateTime(t time.Time) error {
 
 var (
 	ErrGetLocationRecordGetTime    = errors.New("error getting dateTimeOriginal")
-	ErrGetLocationRecordGPSempty   = errors.New("GPS Position empty")
 	ErrGetLocationRecordGPSstring  = errors.New("GPS Position unable to string assert")
 	ErrGetLocationRecordParsingGPS = errors.New("error parsing GPSPosition")
 )
@@ -117,44 +116,29 @@ func (photo *Photo) GetLocationRecord() (*locationData.LocationRecord, error) {
 	// Location
 	lat, ok := photo.SearchExifData(FUJI_RAW_GPS_LATITUDE).(string)
 	if !ok {
-		return nil, errors.Join(
-			errors.New("failed to get latitude"), ErrGetLocationRecordGPSstring,
-		)
+		return nil, fmt.Errorf("failed to get latitude: %w", ErrGetLocationRecordGPSstring)
 	}
 	if lat == "" {
-		errors.Join(
-			errors.New("failed to get latitude"),
-			ErrGetLocationRecordGPSempty,
-		)
+		return nil, nil
 	}
+
 	lng, ok := photo.SearchExifData(FUJI_RAW_GPS_LONGITUDE).(string)
 	if !ok {
-		return nil, errors.Join(
-			errors.New("failed to get longitude"), ErrGetLocationRecordGPSstring,
-		)
+		return nil, fmt.Errorf("failed to get longitude: %w",  ErrGetLocationRecordGPSstring)
 	}
 	if lng == "" {
-		errors.Join(
-			errors.New("failed to get longitude"),
-			ErrGetLocationRecordGPSempty,
-		)
+		return nil, nil
 	}
 
 	coords, err := locationData.NewCoordinatesFromDMS(lat, lng)
 	if err != nil {
-		return nil, errors.Join(
-			ErrGetLocationRecordParsingGPS,
-			fmt.Errorf("%v", err),
-		)
+		return nil, fmt.Errorf("%w: %w", ErrGetLocationRecordParsingGPS,err)
 	}
 
 	// Time
 	dateTimeOriginal, err := photo.GetDateTimeOriginal()
 	if err != nil {
-		return nil, errors.Join(
-			ErrGetLocationRecordGetTime,
-			err,
-		)
+		return nil, fmt.Errorf("%w: %w", ErrGetLocationRecordGetTime, err)
 	}
 
 	return &locationData.LocationRecord{
