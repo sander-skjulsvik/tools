@@ -1,10 +1,12 @@
-package lib
+package exif
 
 import (
 	"fmt"
 
 	"github.com/barasher/go-exiftool"
 )
+
+
 
 func GetAllExifData(filePath string) ([]exiftool.FileMetadata, error) {
 	et, err := exiftool.NewExiftool()
@@ -13,6 +15,25 @@ func GetAllExifData(filePath string) ([]exiftool.FileMetadata, error) {
 	}
 	defer et.Close()
 	return et.ExtractMetadata(filePath), nil
+}
+
+func GetExifValue(filePath, key string) (string, error) {
+	fileMetadatas, err := GetAllExifData(filePath)
+	if err != nil {
+		return "", fmt.Errorf("getExifValue: %w", err)
+	}
+	for _, fileMetadata := range fileMetadatas {
+		for name, value := range fileMetadata.Fields {
+			if name == key {
+				v, ok := value.(string)
+				if !ok {
+					return "", fmt.Errorf("failed to parse value as string")
+				}
+				return v, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("exif key not found")
 }
 
 func PrintAllExifData(fileInfos []exiftool.FileMetadata) error {

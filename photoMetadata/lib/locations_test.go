@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
+	locationData "github.com/sander-skjulsvik/tools/google_location_data/locationData"
 )
 
 func TestGetCoordinatesByTime(t *testing.T) {

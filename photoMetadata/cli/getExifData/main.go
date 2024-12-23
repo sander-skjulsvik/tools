@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jessevdk/go-flags"
-	photoMetadata "github.com/sander-skjulsvik/tools/photoMetadata/lib"
+	"github.com/sander-skjulsvik/tools/photoMetadata/lib/exif"
 )
 
 var opts struct {
@@ -20,7 +20,7 @@ func main() {
 		panic(fmt.Errorf("failed to parse flags: %v", err))
 	}
 
-	exifData, err := photoMetadata.GetAllExifData(opts.FilePath)
+	exifData, err := exif.GetAllExifData(opts.FilePath)
 	if err != nil {
 		panic(fmt.Errorf("failed to get exif data: %v", err))
 	}

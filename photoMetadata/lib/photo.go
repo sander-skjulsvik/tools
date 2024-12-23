@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	locationData "github.com/sander-skjulsvik/tools/google_location_data/lib"
+	locationData "github.com/sander-skjulsvik/tools/google_location_data/locationData"
 	"github.com/sander-skjulsvik/tools/libs/files"
+	"github.com/sander-skjulsvik/tools/photoMetadata/lib/exif"
 )
 
 // should all be lowercase
@@ -51,7 +52,7 @@ const (
 // Photo methods
 
 func (photo *Photo) SearchExifData(search string) interface{} {
-	fileInfos, err := GetAllExifData(photo.Path)
+	fileInfos, err := exif.GetAllExifData(photo.Path)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 		return nil
@@ -73,7 +74,7 @@ func (photo *Photo) SearchExifData(search string) interface{} {
 }
 
 func (p *Photo) WriteExifData(key, value string) error {
-	return WriteExifDataToFile(key, value, p.Path)
+	return exif.WriteExifDataToFile(key, value, p.Path)
 }
 
 /*
