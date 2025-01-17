@@ -15,25 +15,19 @@ const (
 )
 
 type FujiRAF struct {
-	CreationTimeExifName string
-	LatitudeExifName     string
-	LongitudeExifName    string
-	DateTimeFormat       string
+	Path string 
 }
 
-func NewFujiRaf() FujiRAF {
+func NewFujiRaf(path string) FujiRAF {
 	return FujiRAF{
-		CreationTimeExifName: FUJI_CREATION_TIME_EXIF_NAME,
-		LatitudeExifName:     FUJI_LATITUDE_EXIF_NAME,
-		LongitudeExifName:    FUJI_LONGITUDE_EXIF_NAME,
-		DateTimeFormat:       FUJI_DATE_TIME_FORMAT,
+		Path:  path,
 	}
 }
 
 func (fujiRaf *FujiRAF) WriteDateTime(filePath string, t time.Time) error {
 	if err := WriteExifDataToFile(
-		fujiRaf.CreationTimeExifName,
-		t.Format(fujiRaf.DateTimeFormat),
+		FUJI_CREATION_TIME_EXIF_NAME,
+		t.Format(FUJI_DATE_TIME_FORMAT),
 		filePath,
 	); err != nil {
 		return fmt.Errorf("fuji write date time: %w", err)
@@ -42,11 +36,11 @@ func (fujiRaf *FujiRAF) WriteDateTime(filePath string, t time.Time) error {
 }
 
 func (fujiRaf *FujiRAF) GetCrationDateTime(filepath string) (*time.Time, error) {
-	str, err := GetExifValue(filepath, fujiRaf.CreationTimeExifName)
+	str, err := GetExifValue(filepath, FUJI_CREATION_TIME_EXIF_NAME)
 	if err != nil {
 		return nil, fmt.Errorf("fuji raf failed to get crationtime: %w", err)
 	}
-	creation, err := time.Parse(fujiRaf.DateTimeFormat, str)
+	creation, err := time.Parse(FUJI_DATE_TIME_FORMAT, str)
 	if err != nil {
 		return nil, fmt.Errorf("fuji raf failed to parse creation time: %w", err)
 	}
@@ -55,11 +49,11 @@ func (fujiRaf *FujiRAF) GetCrationDateTime(filepath string) (*time.Time, error) 
 }
 
 func (fuijiRaf *FujiRAF) GetLocationRecord(filePath string) (*locationData.Coordinates, error) {
-	latString, err := GetExifValue(filePath, fuijiRaf.LatitudeExifName)
+	latString, err := GetExifValue(filePath, FUJI_LATITUDE_EXIF_NAME)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get latitude")
 	}
-	longString, err := GetExifValue(filePath, fuijiRaf.LongitudeExifName)
+	longString, err := GetExifValue(filePath, FUJI_LONGITUDE_EXIF_NAME)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ongitude")
 	}
@@ -76,10 +70,10 @@ func (fujiRaf *FujiRAF) WriteLocation(filepath string, coordinates *locationData
 	fujiLat := coordinates.LatFuji()
 	fujiLng := coordinates.LngFuji()
 
-	if err := WriteExifDataToFile(fujiRaf.LatitudeExifName, fujiLat, filepath); err != nil {
+	if err := WriteExifDataToFile(FUJI_LATITUDE_EXIF_NAME, fujiLat, filepath); err != nil {
 		return fmt.Errorf("could not write fuji latitude to file: %w", err)
 	}
-	if err := WriteExifDataToFile(fujiRaf.LongitudeExifName, fujiLng, filepath); err != nil {
+	if err := WriteExifDataToFile(FUJI_LONGITUDE_EXIF_NAME, fujiLng, filepath); err != nil {
 		return fmt.Errorf("could not write fuji longitude to file: %w", err)
 	}
 	return nil
