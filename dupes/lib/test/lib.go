@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/sander-skjulsvik/tools/dupes/lib/common"
+	files "github.com/sander-skjulsvik/tools/libs/files"
 )
 
 func SetupExpectedDupes(path string) {
@@ -17,7 +18,7 @@ func SetupExpectedDupes(path string) {
 			// Create the parent folders if they don't exist
 			CrateParentFolders(fullPath)
 			// Create the file with content from ExpectedDupesHashMap
-			CreateFile(fullPath, ExpectedDupesHashMap[hash])
+			files.CreateFile(fullPath, ExpectedDupesHashMap[hash])
 		}
 	}
 }
