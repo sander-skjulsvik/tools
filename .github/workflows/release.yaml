@@ -3,6 +3,7 @@
 on:
   release:
     types: [created]
+  workflow_dispatch:
     
 permissions:
     contents: write
@@ -15,7 +16,7 @@ jobs:
     strategy:
       matrix:
         arch: [amd64, arm]
-        os: [darwin, windows, linux, freebsd]
+        os: [windows, linux, freebsd]
     steps:
       - uses: actions/checkout@v4
       - uses: wangyoucao577/go-release-action@v1
