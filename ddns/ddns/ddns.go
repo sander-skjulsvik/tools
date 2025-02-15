@@ -63,7 +63,7 @@ func Run(conf config) {
 		// Set ip for domain
 		err = conf.dnsProviderClient.SetDomainValue(myPublicIP)
 		if err != nil {
-			log.Printf("failed to set value: %w", err)
+			log.Printf("failed to set value: %s", err)
 			return
 		}
 	})
