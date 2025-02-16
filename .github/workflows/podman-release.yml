@@ -35,14 +35,14 @@ jobs:
         run: |
           VERSION=$(date +'%Y%m%d%H%M%S')  # Format: 20250216123456
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
+          IMAGE_NAME="ghcr.io/${{ github.repository }}/ddnscloudflare:latest"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          
       - name: Build the Image
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository }}/ddnscloudflare:latest"
-          podman build -t ddnscloudflare:$VERSION -f containerfiles/ddnsCloudflare.containerfile .
+          podman build -t $IMAGE_NAME:$VERSION -f containerfiles/ddnsCloudflare.containerfile .
 
       - name: Push the Image
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository }}/ddnscloudflare:latest"
           podman push $IMAGE_NAME:$VERSION
           podman push $IMAGE_NAME:latest
