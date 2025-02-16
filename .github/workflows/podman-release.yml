@@ -40,7 +40,7 @@ jobs:
 
       - name: Build the Image
         run: |
-          podman build -t $IMAGE_NAME:$VERSION -f containerfiles/ddnsCloudflare.containerfile .
+          podman build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:latest -f containerfiles/ddnsCloudflare.containerfile .
 
       - name: Push the Image
         run: |
