@@ -1,5 +1,10 @@
 # Github Workflows
 
+## podman-release
+
+This runs on release published, and builds a podman image for cloudflareddns. Published images can be found at: https://github.com/sander-skjulsvik/tools/pkgs/container/tools%2Fddnscloudflare
+
+
 
 ## Locally testing github actions
 
@@ -17,3 +22,4 @@ on:
   workflow_dispatch:
 
 ```
+
