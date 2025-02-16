@@ -17,3 +17,6 @@ ddns-cloudflare-docker-image:
 
 ddns-cloudflare-podman-image:
 	podman build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfile .
+
+test-release:
+	gh release create test-$(DATE) --notes "This is a test release $(DATE)"
