@@ -13,4 +13,7 @@ win-deps:
 DATE := $$(date '+%Y-%m-%d-%H-%M-%S')
 
 ddns-cloudflare-docker-image:
-	docker build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.dockerfile .
+	docker build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfiles .
+
+ddns-cloudflare-podman-image:
+	podman build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfile .
