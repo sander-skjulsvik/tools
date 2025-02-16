@@ -1,0 +1,43 @@
+name: Build and Push Podman Image
+
+on:
+  release:
+    types: [published]  # Trigger only on new releases
+  push:
+    branches:
+      - test-podman-release   # Change this to your test branch name
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Podman
+        run: |
+          sudo apt update
+          sudo apt install -y podman
+
+      - name: Set Up Rootless Podman
+        run: |
+          podman system migrate
+          echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Build the Image
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository }}/myservice:latest"
+          podman build -t $IMAGE_NAME -f Containerfile .
+
+      - name: Push the Image
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository }}/myservice:latest"
+          podman push $IMAGE_NAME
