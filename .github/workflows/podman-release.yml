@@ -31,13 +31,18 @@ jobs:
       - name: Log in to GitHub Container Registry (GHCR)
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      - name: Get Current DateTime for Version
+        run: |
+          VERSION=$(date +'%Y%m%d%H%M%S')  # Format: 20250216123456
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build the Image
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository }}/myservice:latest"
-          podman build -t $IMAGE_NAME -f Containerfile .
+          IMAGE_NAME="ghcr.io/${{ github.repository }}/ddnscloudflare:latest"
+          podman build -t ddnscloudflare:$VERSION -f containerfiles/ddnsCloudflare.containerfile .
 
       - name: Push the Image
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository }}/myservice:latest"
-          podman push $IMAGE_NAME
+          IMAGE_NAME="ghcr.io/${{ github.repository }}/ddnscloudflare:latest"
+          podman push $IMAGE_NAME:$VERSION
+          podman push $IMAGE_NAME:latest
