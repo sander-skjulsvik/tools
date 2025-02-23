@@ -4,3 +4,5 @@ tools
 dedupe/bin/*
 *.exe
 config.env
+secrets/*
+.vscode
