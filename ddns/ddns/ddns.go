@@ -16,7 +16,7 @@ import (
 type config struct {
 	dnsProviderClient DNSProviderClient
 	Domain            string
-	DnsResolver       func(string) ([]string, error) // For checking if the current dns ip is equal to current ip
+	DnsResolver       func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
 	PublicIPResolver  func() (netip.Addr, error)
 }
 
@@ -34,26 +34,19 @@ func Run(conf config) {
 	// Event loop
 	SleepingEventLoop(20*time.Second, func() {
 		// Get public ip address
-		myPublicIP, err := getPublicIPCustom()
+		myPublicIP, err := conf.PublicIPResolver()
 		if err != nil {
-			log.Printf("%s", fmt.Errorf(""))
+			log.Printf("Failed to get my public ip: %s", err)
 			return
 		}
 
 		// Check pub ip if it differs from current
-		currentDNSIPs, err := resolveDNS(conf.Domain)
+		currentDNSIP, err := conf.DnsResolver(conf.Domain)
 		if err != nil {
 			log.Fatalf("Failed to lookup: %s, err: %s", conf.Domain, err)
 			return
 		}
-		if len(currentDNSIPs) == 0 {
-			log.Printf("Warning: Domain did not resolve any ip addresses, setting one")
-			return
-		}
-		if len(currentDNSIPs) > 1 {
-			log.Printf("Warning: multiple ip addresses found for domain: %s", conf.Domain)
-		}
-		currentDNSIP := currentDNSIPs[0]
+
 		log.Printf("Current dns ip: %s", currentDNSIP)
 		if currentDNSIP == myPublicIP {
 			log.Printf("Current ip equals public ip, no change: %s", currentDNSIP)
@@ -61,7 +54,7 @@ func Run(conf config) {
 		}
 
 		// Set ip for domain
-		err = conf.dnsProviderClient.SetDomainValue(myPublicIP)
+		err = conf.dnsProviderClient.SetDomainValue(myPublicIP.String())
 		if err != nil {
 			log.Printf("failed to set value: %s", err)
 			return
@@ -79,12 +72,11 @@ func SleepingEventLoop(sleepTime time.Duration, f func()) {
 		f()
 		time.Sleep(sleepTime)
 	}
-
 }
 
-func getPublicIPCustom() (string, error) {
-	return "1.1.1.2", nil
-}
+// func getPublicIPCustom() (string, error) {
+// 	return "1.1.1.2", nil
+// }
 
 func getPublicIPIPIFY() (netip.Addr, error) {
 	url := "https://api.ipify.org?format=json"
@@ -107,14 +99,27 @@ func getPublicIPIPIFY() (netip.Addr, error) {
 	return netip.ParseAddr(r.Ip)
 }
 
-func resolveDNS(domain string) ([]string, error) {
+func resolveDNS(domain string) (netip.Addr, error) {
 	res, err := net.LookupIP(domain)
 	if err != nil {
-		return []string{}, err
+		return netip.Addr{}, err
 	}
 	ips := []string{}
 	for _, ip := range res {
 		ips = append(ips, ip.String())
 	}
-	return ips, err
+
+	if len(ips) == 0 {
+		return netip.Addr{}, fmt.Errorf("domain did not resolve any ip addresses, setting one")
+	}
+	if len(ips) > 1 {
+		return netip.Addr{}, fmt.Errorf("multiple ip addresses found for domain: %s", domain)
+	}
+
+	ip, err := netip.ParseAddr(ips[0])
+	if err != nil {
+		return netip.Addr{}, err
+	}
+
+	return ip, err
 }
