@@ -30,6 +30,7 @@ func NewDefaultCloudflareConfig(token, ZoneID, dnsRecordID, domain string) confi
 }
 
 func Run(conf config) {
+	log.Printf("conf: %s", conf.Domain)
 
 	// Event loop
 	SleepingEventLoop(20*time.Second, func() {

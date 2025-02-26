@@ -9,6 +9,13 @@ import (
 )
 
 func main() {
+
+	type conf struct {
+		Token       string
+		ZoneID      string
+		DnsRecordID string
+		Domain      string
+	}
 	token := os.Getenv("TOKEN")
 	if token == "" {
 		log.Panicf("TOKEN: is not set, stopping")
@@ -25,7 +32,14 @@ func main() {
 	if domain == "" {
 		log.Panicf("DOMAIN: is not set, stopping")
 	}
+	c := conf{
+		Token:       token,
+		ZoneID:      zoneID,
+		DnsRecordID: dnsRecordID,
+		Domain:      domain,
+	}
 
+	log.Printf("Conf: %+v", c)
 	ddns.Run(ddns.NewDefaultCloudflareConfig(
 		token, zoneID, dnsRecordID, domain,
 	))
