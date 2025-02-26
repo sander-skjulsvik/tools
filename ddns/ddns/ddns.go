@@ -24,7 +24,7 @@ func NewDefaultCloudflareConfig(token, ZoneID, dnsRecordID, domain string) confi
 	return config{
 		dnsProviderClient: cloudflare.New(token, ZoneID, dnsRecordID),
 		Domain:            domain,
-		PublicIPResolver:  getPublicIPIPIFY,
+		PublicIPResolver:  getPublicFromIPIFY,
 		DnsResolver:       resolveDNS,
 	}
 }
@@ -78,11 +78,11 @@ func SleepingEventLoop(sleepTime time.Duration, f func()) {
 // 	return "1.1.1.2", nil
 // }
 
-func getPublicIPIPIFY() (netip.Addr, error) {
+func getPublicFromIPIFY() (netip.Addr, error) {
 	url := "https://api.ipify.org?format=json"
 	resp, err := http.Get(url)
 	if err != nil {
-		return netip.Addr{}, fmt.Errorf("failed to get public ip from: %s, err: %w", url, err)
+		return netip.Addr{}, fmt.Errorf("request failed: %s, err: %w", url, err)
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
@@ -94,8 +94,9 @@ func getPublicIPIPIFY() (netip.Addr, error) {
 		Ip string `json:"ip"`
 	}
 	var r IP
-	json.Unmarshal(b, &r)
-
+	if err = json.Unmarshal(b, &r); err != nil {
+		return netip.Addr{}, fmt.Errorf("failed to parse ip: %s", err)
+	}
 	return netip.ParseAddr(r.Ip)
 }
 
@@ -115,11 +116,5 @@ func resolveDNS(domain string) (netip.Addr, error) {
 	if len(ips) > 1 {
 		return netip.Addr{}, fmt.Errorf("multiple ip addresses found for domain: %s", domain)
 	}
-
-	ip, err := netip.ParseAddr(ips[0])
-	if err != nil {
-		return netip.Addr{}, err
-	}
-
-	return ip, err
+	return netip.ParseAddr(ips[0])
 }

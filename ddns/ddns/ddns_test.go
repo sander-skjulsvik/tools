@@ -16,7 +16,7 @@ func TestResolveDNS(t *testing.T) {
 }
 
 func TestGetPublicIP(t *testing.T) {
-	ip, err := getPublicIPIPIFY()
+	ip, err := getPublicFromIPIFY()
 
 	assert.NilError(t, err)
 	assert.Equal(t, ip.Is4(), true)
