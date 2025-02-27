@@ -36,7 +36,7 @@ func Run(conf config) {
 		// Get public ip address
 		myPublicIP, err := conf.PublicIPResolver()
 		if err != nil {
-			log.Printf("Failed to get my public ip: %s", err)
+			log.Fatalf("Failed to get my public ip: %s", err)
 			return
 		}
 
