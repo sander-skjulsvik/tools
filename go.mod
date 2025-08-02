@@ -13,11 +13,12 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
+	golang.org/x/net v0.42.0 // indirect
 )
 
 require (
 	github.com/cloudflare/cloudflare-go/v4 v4.0.0
 	github.com/deckarep/golang-set/v2 v2.6.0
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	gotest.tools v2.2.0+incompatible
 )

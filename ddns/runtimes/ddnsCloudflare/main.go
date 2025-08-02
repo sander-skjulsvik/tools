@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -38,6 +39,7 @@ func main() {
 	if domain == "" || domain == "DOMAIN" {
 		log.Fatalf("\n\nDOMAIN: is not set, stopping\n\n")
 	}
+
 	ddns.Run(ddns.NewDefaultCloudflareConfig(
 		token, zoneID, dnsRecordID, domain,
 	))
