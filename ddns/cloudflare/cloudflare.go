@@ -12,26 +12,26 @@ import (
 	"github.com/cloudflare/cloudflare-go/v4/option"
 )
 
-type DnsClient struct {
+type DomainManager struct {
 	dns.DNSService
 	dnsRecordID string
 	zoneID      string
 }
 
-func New(token, zoneID, dnsRecordID string) *DnsClient {
+func NewDomainManager(token, zoneID, dnsRecordID string) *DomainManager {
 	dnsServiceClient := dns.NewDNSService(
 		option.WithAPIToken(token),
 		option.WithBaseURL("https://api.cloudflare.com/client/v4/"),
 	)
 
-	return &DnsClient{
+	return &DomainManager{
 		dnsRecordID: dnsRecordID,
 		zoneID:      zoneID,
 		DNSService:  *dnsServiceClient,
 	}
 }
 
-func (dc *DnsClient) Info() {
+func (dc *DomainManager) Info() {
 
 	res, err := dc.DNSService.Records.List(
 		context.TODO(),
@@ -46,7 +46,7 @@ func (dc *DnsClient) Info() {
 	fmt.Printf("%s", res.JSON.RawJSON())
 }
 
-func (dc *DnsClient) SetDomainValue(value string) error {
+func (dc *DomainManager) SetDomainValue(value string) error {
 	ip := net.ParseIP(value)
 	if ip == nil {
 		return fmt.Errorf("SetDomainValue got none valid ip: %s", value)
