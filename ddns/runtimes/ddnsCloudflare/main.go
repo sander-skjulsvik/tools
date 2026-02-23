@@ -14,6 +14,7 @@ type config struct {
 	ZoneID      string `env:"ZONE_ID" env-required:"true"`
 	DNSRecordID string `env:"DNS_RECORD_ID" env-required:"true"`
 	Domain      string `env:"DOMAIN" env-required:"true"`
+	delay       int    `env:"DELAY" env-default:"20"`
 }
 
 // journalctl --user -xeu ddns-cloudflare.service
@@ -21,11 +22,12 @@ func main() {
 	log.Printf("\n\n %s \n\n", vanity.Skjulsvik)
 
 	var cfg config
-	if err := cleanenv.ReadEnv(&cfg); err != nil {
+	err := cleanenv.ReadConfig(".env", &cfg)
+	if err != nil {
 		log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
-	}
 
+	}
 	ddns.New(
-		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain,
+		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain, cfg.delay,
 	).Run()
 }

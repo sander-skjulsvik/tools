@@ -18,25 +18,27 @@ type config struct {
 	Domain           string
 	DnsResolver      func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
 	PublicIPResolver func() (netip.Addr, error)
+	delay            int
 }
 
 type DomainManager interface {
 	SetDomainValue(ip string) error
 }
 
-func New(token, ZoneID, dnsRecordID, domain string) config {
+func New(token, ZoneID, dnsRecordID, domain string, delay int) config {
 	return config{
 		domainManager:    cloudflare.NewDomainManager(token, ZoneID, dnsRecordID),
 		Domain:           domain,
 		PublicIPResolver: getPublicFromIPIFY,
 		DnsResolver:      resolveDNS,
+		delay:            delay,
 	}
 }
 
 func (c config) Run() {
 
 	// Event loop
-	sleepingEventLoop(20*time.Second, func() {
+	sleepingEventLoop(time.Second*time.Duration(c.delay), func() {
 		// Get public ip address
 		myPublicIP, err := c.PublicIPResolver()
 		if err != nil {
@@ -63,6 +65,9 @@ func (c config) Run() {
 			log.Printf("failed to set value: %s", err)
 			return
 		}
+		// Sleeping after updating domain so that we wait for the ttl to expire before checking again,
+		// this is to avoid updating the domain multiple times in a row if there is an issue with the dns provider
+		time.Sleep(1 * time.Minute)
 	})
 }
 
