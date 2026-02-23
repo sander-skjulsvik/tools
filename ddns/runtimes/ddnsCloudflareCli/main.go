@@ -16,15 +16,14 @@ type config struct {
 	Domain      string `env:"DOMAIN" env-required:"true"`
 }
 
-// journalctl --user -xeu ddns-cloudflare.service
 func main() {
+
 	log.Printf("\n\n %s \n\n", vanity.Skjulsvik)
 
 	var cfg config
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
 	}
-
 	ddns.Run(ddns.NewDDNS(
 		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain,
 	))

@@ -14,25 +14,29 @@ import (
 )
 
 type config struct {
-	dnsProviderClient DNSProviderClient
-	Domain            string
-	DnsResolver       func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
-	PublicIPResolver  func() (netip.Addr, error)
+	domainManager    DomainManager
+	Domain           string
+	DnsResolver      func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
+	PublicIPResolver func() (netip.Addr, error)
 }
 
-func NewDefaultCloudflareConfig(token, ZoneID, dnsRecordID, domain string) config {
+type DomainManager interface {
+	SetDomainValue(ip string) error
+}
+
+func NewDDNS(token, ZoneID, dnsRecordID, domain string) config {
 	return config{
-		dnsProviderClient: cloudflare.New(token, ZoneID, dnsRecordID),
-		Domain:            domain,
-		PublicIPResolver:  getPublicFromIPIFY,
-		DnsResolver:       resolveDNS,
+		domainManager:    cloudflare.NewDomainManager(token, ZoneID, dnsRecordID),
+		Domain:           domain,
+		PublicIPResolver: getPublicFromIPIFY,
+		DnsResolver:      resolveDNS,
 	}
 }
 
 func Run(conf config) {
 
 	// Event loop
-	SleepingEventLoop(20*time.Second, func() {
+	sleepingEventLoop(20*time.Second, func() {
 		// Get public ip address
 		myPublicIP, err := conf.PublicIPResolver()
 		if err != nil {
@@ -54,7 +58,7 @@ func Run(conf config) {
 		}
 
 		// Set ip for domain
-		err = conf.dnsProviderClient.SetDomainValue(myPublicIP.String())
+		err = conf.domainManager.SetDomainValue(myPublicIP.String())
 		if err != nil {
 			log.Printf("failed to set value: %s", err)
 			return
@@ -62,12 +66,7 @@ func Run(conf config) {
 	})
 }
 
-type DNSProviderClient interface {
-	Info()
-	SetDomainValue(ip string) error
-}
-
-func SleepingEventLoop(sleepTime time.Duration, f func()) {
+func sleepingEventLoop(sleepTime time.Duration, f func()) {
 	for {
 		f()
 		time.Sleep(sleepTime)
