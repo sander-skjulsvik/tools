@@ -24,7 +24,7 @@ type DomainManager interface {
 	SetDomainValue(ip string) error
 }
 
-func NewDDNS(token, ZoneID, dnsRecordID, domain string) config {
+func New(token, ZoneID, dnsRecordID, domain string) config {
 	return config{
 		domainManager:    cloudflare.NewDomainManager(token, ZoneID, dnsRecordID),
 		Domain:           domain,
@@ -33,21 +33,21 @@ func NewDDNS(token, ZoneID, dnsRecordID, domain string) config {
 	}
 }
 
-func Run(conf config) {
+func (c config) Run() {
 
 	// Event loop
 	sleepingEventLoop(20*time.Second, func() {
 		// Get public ip address
-		myPublicIP, err := conf.PublicIPResolver()
+		myPublicIP, err := c.PublicIPResolver()
 		if err != nil {
 			log.Fatalf("Failed to get my public ip: %s", err)
 			return
 		}
 
 		// Check pub ip if it differs from current
-		currentDNSIP, err := conf.DnsResolver(conf.Domain)
+		currentDNSIP, err := c.DnsResolver(c.Domain)
 		if err != nil {
-			log.Fatalf("Failed to lookup: %s, err: %s", conf.Domain, err)
+			log.Fatalf("Failed to lookup: %s, err: %s", c.Domain, err)
 			return
 		}
 
@@ -58,7 +58,7 @@ func Run(conf config) {
 		}
 
 		// Set ip for domain
-		err = conf.domainManager.SetDomainValue(myPublicIP.String())
+		err = c.domainManager.SetDomainValue(myPublicIP.String())
 		if err != nil {
 			log.Printf("failed to set value: %s", err)
 			return

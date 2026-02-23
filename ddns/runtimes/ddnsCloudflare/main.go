@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
 	}
 
-	ddns.Run(ddns.NewDDNS(
+	ddns.New(
 		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain,
-	))
+	).Run()
 }
