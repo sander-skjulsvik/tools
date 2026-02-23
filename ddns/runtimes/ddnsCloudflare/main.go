@@ -22,10 +22,11 @@ func main() {
 	log.Printf("\n\n %s \n\n", vanity.Skjulsvik)
 
 	var cfg config
-	err := cleanenv.ReadConfig(".env", &cfg)
-	if err != nil {
-		log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
-
+	if err := cleanenv.ReadConfig(".env", &cfg); err != nil {
+		log.Printf("Could not find .env file, trying to read of env vars")
+		if err := cleanenv.ReadEnv(&cfg); err != nil {
+			log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
+		}
 	}
 	ddns.New(
 		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain, cfg.delay,
