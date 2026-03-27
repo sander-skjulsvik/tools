@@ -13,10 +13,7 @@ win-deps:
 DATE := $$(date '+%Y-%m-%d-%H-%M-%S')
 
 ddns-cloudflare-docker-image:
-	docker build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfiles .
-
-ddns-cloudflare-podman-image:
-	podman build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfile .
+	docker build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfile .
 
 test-release:
 	gh release create test-$(DATE) --notes "This is a test release $(DATE)"

@@ -2,7 +2,7 @@
 
 ## podman-release
 
-This runs on release published, and builds a podman image for cloudflareddns. Published images can be found at: https://github.com/sander-skjulsvik/tools/pkgs/container/tools%2Fddnscloudflare
+This runs on release published, and builds a Docker image for cloudflareddns. Published images can be found at: https://github.com/sander-skjulsvik/tools/pkgs/container/tools%2Fddnscloudflare
 
 
 

@@ -8,5 +8,5 @@ You can run the programm in two different ways,you either can use one of the run
 
 ## Packages
 
-Upon release a new podman image and a executable will be built and stored in the repo in github.
+Upon release a new Docker image and a executable will be built and stored in the repo in github.
 

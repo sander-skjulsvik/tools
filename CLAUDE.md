@@ -20,9 +20,6 @@ go test -v ./dupes/...
 go test -v ./dupesCompareDirs/...
 go test -v ./ddns/...
 
-# Build container image for ddns-cloudflare (podman)
-make ddns-cloudflare-podman-image
-
 # Build container image for ddns-cloudflare (docker)
 make ddns-cloudflare-docker-image
 ```
