@@ -3,42 +3,32 @@ package main
 import (
 	_ "embed"
 	"log"
-	"os"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sander-skjulsvik/tools/ddns/ddns"
+	"github.com/sander-skjulsvik/tools/libs/vanity"
 )
 
-var ART string = `
-_____ _    _       _           _ _    
-  / ____| |  (_)     | |         (_) |   
- | (___ | | ___ _   _| |_____   ___| | __
-  \___ \| |/ / | | | | / __\ \ / / | |/ /
-  ____) |   <| | |_| | \__ \\ V /| |   < 
- |_____/|_|\_\ |\__,_|_|___/ \_/ |_|_|\_\
-            _/ |                         
-           |__/
-`
+type config struct {
+	Token       string `env:"TOKEN" env-required:"true"`
+	ZoneID      string `env:"ZONE_ID" env-required:"true"`
+	DNSRecordID string `env:"DNS_RECORD_ID" env-required:"true"`
+	Domain      string `env:"DOMAIN" env-required:"true"`
+	delay       int    `env:"DELAY" env-default:"20"`
+}
 
 // journalctl --user -xeu ddns-cloudflare.service
 func main() {
-	log.Printf("\n\n %s \n\n", ART)
-	token := os.Getenv("TOKEN")
-	if token == "" || token == "TOKEN" {
-		log.Fatalf("\n\nTOKEN: is not set, stopping\n\n")
+	log.Printf("\n\n %s \n\n", vanity.Skjulsvik)
+
+	var cfg config
+	if err := cleanenv.ReadConfig(".env", &cfg); err != nil {
+		log.Printf("Could not find .env file, trying to read of env vars")
+		if err := cleanenv.ReadEnv(&cfg); err != nil {
+			log.Fatalf("\n\nError reading environment variables: %v\n\n", err)
+		}
 	}
-	zoneID := os.Getenv("ZONE_ID")
-	if zoneID == "" || zoneID == "ZONE_ID" {
-		log.Fatalf("\n\nZONE_ID: is not set, stopping\n\n")
-	}
-	dnsRecordID := os.Getenv("DNS_RECORD_ID")
-	if dnsRecordID == "" || dnsRecordID == "DNS_RECORD_ID" {
-		log.Fatalf("\n\nDNS_RECORD_ID: is not set, stopping\n\n")
-	}
-	domain := os.Getenv("DOMAIN")
-	if domain == "" || domain == "DOMAIN" {
-		log.Fatalf("\n\nDOMAIN: is not set, stopping\n\n")
-	}
-	ddns.Run(ddns.NewDefaultCloudflareConfig(
-		token, zoneID, dnsRecordID, domain,
-	))
+	ddns.New(
+		cfg.Token, cfg.ZoneID, cfg.DNSRecordID, cfg.Domain, cfg.delay,
+	).Run()
 }

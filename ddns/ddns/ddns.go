@@ -14,36 +14,42 @@ import (
 )
 
 type config struct {
-	dnsProviderClient DNSProviderClient
-	Domain            string
-	DnsResolver       func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
-	PublicIPResolver  func() (netip.Addr, error)
+	domainManager    DomainManager
+	Domain           string
+	DnsResolver      func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
+	PublicIPResolver func() (netip.Addr, error)
+	delay            int
 }
 
-func NewDefaultCloudflareConfig(token, ZoneID, dnsRecordID, domain string) config {
+type DomainManager interface {
+	SetDomainValue(ip string) error
+}
+
+func New(token, ZoneID, dnsRecordID, domain string, delay int) config {
 	return config{
-		dnsProviderClient: cloudflare.New(token, ZoneID, dnsRecordID),
-		Domain:            domain,
-		PublicIPResolver:  getPublicFromIPIFY,
-		DnsResolver:       resolveDNS,
+		domainManager:    cloudflare.NewDomainManager(token, ZoneID, dnsRecordID),
+		Domain:           domain,
+		PublicIPResolver: getPublicFromIPIFY,
+		DnsResolver:      resolveDNS,
+		delay:            delay,
 	}
 }
 
-func Run(conf config) {
+func (c config) Run() {
 
 	// Event loop
-	SleepingEventLoop(20*time.Second, func() {
+	sleepingEventLoop(time.Second*time.Duration(c.delay), func() {
 		// Get public ip address
-		myPublicIP, err := conf.PublicIPResolver()
+		myPublicIP, err := c.PublicIPResolver()
 		if err != nil {
 			log.Fatalf("Failed to get my public ip: %s", err)
 			return
 		}
 
 		// Check pub ip if it differs from current
-		currentDNSIP, err := conf.DnsResolver(conf.Domain)
+		currentDNSIP, err := c.DnsResolver(c.Domain)
 		if err != nil {
-			log.Fatalf("Failed to lookup: %s, err: %s", conf.Domain, err)
+			log.Fatalf("Failed to lookup: %s, err: %s", c.Domain, err)
 			return
 		}
 
@@ -54,20 +60,18 @@ func Run(conf config) {
 		}
 
 		// Set ip for domain
-		err = conf.dnsProviderClient.SetDomainValue(myPublicIP.String())
+		err = c.domainManager.SetDomainValue(myPublicIP.String())
 		if err != nil {
 			log.Printf("failed to set value: %s", err)
 			return
 		}
+		// Sleeping after updating domain so that we wait for the ttl to expire before checking again,
+		// this is to avoid updating the domain multiple times in a row if there is an issue with the dns provider
+		time.Sleep(1 * time.Minute)
 	})
 }
 
-type DNSProviderClient interface {
-	Info()
-	SetDomainValue(ip string) error
-}
-
-func SleepingEventLoop(sleepTime time.Duration, f func()) {
+func sleepingEventLoop(sleepTime time.Duration, f func()) {
 	for {
 		f()
 		time.Sleep(sleepTime)

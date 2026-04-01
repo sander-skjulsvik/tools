@@ -10,3 +10,9 @@ You can run the programm in two different ways,you either can use one of the run
 
 Upon release a new Docker image and a executable will be built and stored in the repo in github.
 
+## Curl command for getting domain id
+
+```shell
+curl https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records \
+    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq
+```
