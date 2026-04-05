@@ -3,7 +3,7 @@ package cloudflare
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"time"
 
@@ -40,7 +40,8 @@ func (dc *DnsClient) Info() {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Help: %v", err)
+		slog.Error("failed to list dns records", "err", err)
+		return
 	}
 
 	fmt.Printf("%s", res.JSON.RawJSON())
@@ -66,11 +67,12 @@ func (dc *DnsClient) SetDomainValue(value string) error {
 	if err != nil {
 		return fmt.Errorf("failed to set value: %s, err: %w", value, err)
 	}
-	log.Printf("updated: %s to point to: %s, it took: %fs", dc.dnsRecordID, ip.String(), after.Sub(before).Seconds())
+	duration := after.Sub(before).Seconds()
+	slog.Info("updated", "record_id", dc.dnsRecordID, "ip", ip.String(), "duration_s", duration)
 
 	moddedTime := res.ModifiedOn
 	if !moddedTime.After(before.Add(-10 * time.Minute)) {
-		log.Printf("Warning: Modded time is too long ago: %fs", before.Sub(moddedTime).Seconds())
+		slog.Warn("modified timestamp is too old", "modified_on", moddedTime, "age_s", before.Sub(moddedTime).Seconds())
 	}
 	return nil
 }
