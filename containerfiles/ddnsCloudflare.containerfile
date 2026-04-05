@@ -10,5 +10,6 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/service /app/ddns/runtimes/ddnsCloudflare/main.go
 
 FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /bin/service /bin/service
 ENTRYPOINT ["/bin/service"]
