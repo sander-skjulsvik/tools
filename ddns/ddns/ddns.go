@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/netip"
@@ -36,27 +36,27 @@ func Run(conf config) {
 		// Get public ip address
 		myPublicIP, err := conf.PublicIPResolver()
 		if err != nil {
-			log.Fatalf("Failed to get my public ip: %s", err)
+			slog.Error("failed to get public ip", "err", err)
 			return
 		}
 
 		// Check pub ip if it differs from current
 		currentDNSIP, err := conf.DnsResolver(conf.Domain)
 		if err != nil {
-			log.Fatalf("Failed to lookup: %s, err: %s", conf.Domain, err)
+			slog.Error("failed to lookup domain", "domain", conf.Domain, "err", err)
 			return
 		}
 
-		log.Printf("Current dns ip: %s", currentDNSIP)
+		slog.Info("checked", "dns_ip", currentDNSIP.String(), "public_ip", myPublicIP.String())
 		if currentDNSIP == myPublicIP {
-			log.Printf("Current ip equals public ip, no change: %s", currentDNSIP)
+			slog.Info("no change", "ip", currentDNSIP.String())
 			return
 		}
 
 		// Set ip for domain
 		err = conf.dnsProviderClient.SetDomainValue(myPublicIP.String())
 		if err != nil {
-			log.Printf("failed to set value: %s", err)
+			slog.Error("failed to set dns value", "err", err)
 			return
 		}
 	})
@@ -73,10 +73,6 @@ func SleepingEventLoop(sleepTime time.Duration, f func()) {
 		time.Sleep(sleepTime)
 	}
 }
-
-// func getPublicIPCustom() (string, error) {
-// 	return "1.1.1.2", nil
-// }
 
 func getPublicFromIPIFY() (netip.Addr, error) {
 	url := "https://api.ipify.org?format=json"
