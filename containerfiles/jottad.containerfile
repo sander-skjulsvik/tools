@@ -11,9 +11,9 @@ RUN curl -fsSL "https://repo.jotta.us/archives/linux/amd64/jotta-cli-${JOTTA_VER
     | tar xz -C / \
     && chmod +x /usr/bin/jottad /usr/bin/jotta-cli
 
-# jottad stores config and state under $HOME by default
-# Mount a PVC at /root to persist credentials and sync state across restarts
-VOLUME ["/root"]
+# jottad stores config and state at /var/lib/jottad
+# Mount a PVC here to persist credentials and sync state across restarts
+VOLUME ["/var/lib/jottad"]
 
 # jotta-cli communicates with jottad on this port (localhost only)
 EXPOSE 14443
