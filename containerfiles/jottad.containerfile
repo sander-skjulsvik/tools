@@ -18,4 +18,4 @@ VOLUME ["/root"]
 # jotta-cli communicates with jottad on this port (localhost only)
 EXPOSE 14443
 
-ENTRYPOINT ["/usr/bin/jottad"]
+ENTRYPOINT ["/usr/bin/jottad", "stdoutlog"]
