@@ -2,6 +2,7 @@
 tmp*
 tools
 dedupe/bin/*
+bin/*
 *.exe
 config.env
 secrets/*
