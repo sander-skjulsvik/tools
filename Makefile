@@ -1,6 +1,10 @@
 actions:
 	act
 
+.PHONY: isodate-nest
+isodate-nest:
+	go build -o bin/isodate-nest ./isodate-nest/
+
 win-build:
 	go build -o bin\\ .\\...
 
