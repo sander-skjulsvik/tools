@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -95,9 +95,9 @@ def fetch_item_details(url: str) -> dict:
     except Exception as e:
         return {"_error": str(e)}
 
-    details: dict = {}
+    details: dict = {"seller_type": "private"}  # default; overridden by JSON-LD if present
 
-    # JSON-LD is the cleanest source
+    # JSON-LD for condition, category, and seller type (description here is truncated by Finn)
     for script in soup.find_all("script", type="application/ld+json"):
         try:
             data = json.loads(script.string or "")
@@ -105,15 +105,28 @@ def fetch_item_details(url: str) -> dict:
             continue
         if data.get("@type") != "Product":
             continue
-        details["description"] = data.get("description", "")
         raw_condition = data.get("itemCondition", "")
-        # schema.org returns a full URL like "https://schema.org/UsedCondition"
         condition_key = raw_condition.split("/")[-1] if raw_condition else ""
         details["condition"] = CONDITION_MAP.get(condition_key, condition_key)
         for prop in data.get("additionalProperty", []):
             if prop.get("name") == "category":
                 details["category"] = prop.get("value", "")
+        seller = data.get("offers", {}).get("seller", {})
+        details["seller_type"] = "store" if seller.get("@type") == "Organization" else "private"
         break
+
+    # Full description from the page HTML (JSON-LD version is truncated).
+    # BS4 ≥4.12 stores content inside certain divs as TemplateString, which get_text() skips,
+    # so we iterate descendants directly. Target whitespace-pre-wrap to exclude the
+    # "Vis mer" toggle button that lives in a sibling div outside the content area.
+    desc_section = soup.select_one('[data-testid="description"] .whitespace-pre-wrap')
+    if desc_section:
+        parts = [
+            str(s).strip()
+            for s in desc_section.descendants
+            if isinstance(s, NavigableString) and str(s).strip() and str(s).strip() != "Beskrivelse"
+        ]
+        details["description"] = "\n".join(parts)
 
     # Condition as human-readable text from the page (more descriptive than schema.org)
     nok = soup.find("section", attrs={"aria-label": "Nøkkelinfo"})

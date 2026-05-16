@@ -38,6 +38,7 @@ uv run finn_search.py "https://www.finn.no/recommerce/forsale/search?q=weber" --
 | `description` | Item page (`--details`) | Full seller description |
 | `condition` | Item page (`--details`) | e.g. `"Ny"`, `"Brukt"`, `"Godt brukt - Synlig brukt"` |
 | `category` | Item page (`--details`) | Full category path |
+| `seller_type` | Item page (`--details`) | `"private"` or `"store"` |
 
 ## Options
 
