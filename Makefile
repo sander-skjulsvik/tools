@@ -5,6 +5,24 @@ actions:
 isodate-nest:
 	go build -o bin/isodate-nest ./isodate-nest/
 
+.PHONY: publicip
+publicip:
+	go build -o bin/publicip ./publicip/
+
+.PHONY: tls-check
+tls-check:
+	go build -o bin/tls-check ./tls-check/
+
+.PHONY: install install-publicip install-tls-check
+install: install-publicip install-tls-check
+
+# Installs into $(go env GOPATH)/bin (or GOBIN if set)
+install-publicip:
+	go install ./publicip/
+
+install-tls-check:
+	go install ./tls-check/
+
 win-build:
 	go build -o bin\\ .\\...
 
