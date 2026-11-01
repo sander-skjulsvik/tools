@@ -22,11 +22,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Current DateTime for Version
+      - name: Set Image Tags From Release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
-          VERSION=$(date +'%Y%m%d%H%M%S')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/ddnscloudflare" >> $GITHUB_ENV
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/ddnscloudflare
+          TAGS=$IMAGE_NAME:$RELEASE_TAG
+          # Test releases are pre-releases and must not move :latest
+          if [ "$PRERELEASE" != "true" ]; then TAGS=$TAGS,$IMAGE_NAME:latest; fi
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
           echo "GO_VERSION=$(grep -m1 '^go ' go.mod | cut -d' ' -f2)" >> $GITHUB_ENV
 
       - name: Build and Push the Image
@@ -36,9 +41,7 @@ jobs:
           file: containerfiles/ddnsCloudflare.containerfile
           build-args: GO_VERSION=${{ env.GO_VERSION }}
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-            ${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.TAGS }}
 
   build-and-push-jottad:
     runs-on: ubuntu-latest
@@ -57,11 +60,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Current DateTime for Version
+      - name: Set Image Tags From Release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
-          VERSION=$(date +'%Y%m%d%H%M%S')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/jottad" >> $GITHUB_ENV
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/jottad
+          TAGS=$IMAGE_NAME:$RELEASE_TAG
+          # Test releases are pre-releases and must not move :latest
+          if [ "$PRERELEASE" != "true" ]; then TAGS=$TAGS,$IMAGE_NAME:latest; fi
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
 
       - name: Build and Push the Image
         uses: docker/build-push-action@v6
@@ -69,6 +77,4 @@ jobs:
           context: .
           file: containerfiles/jottad.containerfile
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-            ${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.TAGS }}

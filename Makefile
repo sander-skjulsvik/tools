@@ -37,11 +37,13 @@ DATE := $$(date '+%Y-%m-%d-%H-%M-%S')
 ddns-cloudflare-docker-image:
 	docker build -t ddnscloudflare-$(DATE) --build-arg GO_VERSION=$$(grep -m1 '^go ' go.mod | cut -d' ' -f2) -f containerfiles/ddnsCloudflare.containerfile .
 
+# Pre-release, so it never becomes the latest release or the :latest image
 test-release:
-	gh release create test-$(DATE) --notes "This is a test release $(DATE)"
+	gh release create test-$(DATE) --prerelease --notes "This is a test release $(DATE)"
 
-# Usage: make release VERSION=v1.0.0
+# Usage: make release [BUMP=major|minor|patch] [VERSION=v1.2.3]
+# Bumps the latest vX.Y.Z tag on GitHub (minor by default), starting at v0.1.0
+BUMP ?= minor
 .PHONY: release
 release:
-	@test -n "$(VERSION)" || { echo "usage: make release VERSION=v1.0.0" >&2; exit 1; }
-	gh release create $(VERSION) --generate-notes
+	./scripts/release.sh $(BUMP) $(VERSION)

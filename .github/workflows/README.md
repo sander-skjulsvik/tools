@@ -6,7 +6,7 @@ This runs on release created, and uploads a separate archive per tool and target
 
 ## podman-release
 
-This runs on release published, and builds a Docker image for cloudflareddns. Published images can be found at: https://github.com/sander-skjulsvik/tools/pkgs/container/tools%2Fddnscloudflare
+This runs on release published, and builds the ddnscloudflare and jottad images, tagged with the release tag (e.g. `v0.1.0`). Real releases also update `:latest`; pre-releases such as `make test-release` don't. Published images can be found at: https://github.com/sander-skjulsvik/tools/pkgs/container/tools%2Fddnscloudflare
 
 
 
