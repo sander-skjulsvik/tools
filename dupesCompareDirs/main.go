@@ -52,7 +52,7 @@ func main() {
 
 	switch *outputJson {
 	case true:
-		fmt.Printf(string(dupes.GetJSON()))
+		fmt.Print(string(dupes.GetJSON()))
 	case false:
 		dupes.Present(false)
 	}
