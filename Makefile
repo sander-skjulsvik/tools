@@ -35,7 +35,7 @@ win-deps:
 DATE := $$(date '+%Y-%m-%d-%H-%M-%S')
 
 ddns-cloudflare-docker-image:
-	docker build -t ddnscloudflare-$(DATE) -f containerfiles/ddnsCloudflare.containerfile .
+	docker build -t ddnscloudflare-$(DATE) --build-arg GO_VERSION=$$(grep -m1 '^go ' go.mod | cut -d' ' -f2) -f containerfiles/ddnsCloudflare.containerfile .
 
 test-release:
 	gh release create test-$(DATE) --notes "This is a test release $(DATE)"

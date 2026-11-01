@@ -3,27 +3,48 @@ name: release go executables
 on:
   release:
     types: [created]
-    
+
 permissions:
     contents: write
     packages: write
 
 jobs:
-  releases: 
-    name: releases
+  # One archive per tool and target, e.g. tls-check-<tag>-linux-arm64.tar.gz
+  releases:
+    name: ${{ matrix.tool.name }} (${{ matrix.os }}/${{ matrix.arch }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        arch: [amd64, arm]
-        os: [windows, linux, freebsd]
+        tool:
+          - { name: ddnsCloudflare, path: ./ddns/runtimes/ddnsCloudflare }
+          - { name: dupes, path: ./dupes }
+          - { name: dupesCompareDirs, path: ./dupesCompareDirs }
+          - { name: fileDupesAll, path: ./dupesCompareDirs/cli/fileDupesAll }
+          - { name: fileDupesInBoth, path: ./dupesCompareDirs/cli/fileDupesInBoth }
+          - { name: fileDupesInFirst, path: ./dupesCompareDirs/cli/fileDupesInFirst }
+          - { name: isodate-nest, path: ./isodate-nest }
+          - { name: publicip, path: ./publicip }
+          - { name: tls-check, path: ./tls-check }
+        arch: [amd64, arm64, arm]
+        os: [windows, linux, darwin, freebsd]
+        exclude:
+          # windows/arm was removed in Go 1.25, darwin/arm never existed
+          - os: windows
+            arch: arm
+          - os: darwin
+            arch: arm
     steps:
       - uses: actions/checkout@v4
       - uses: wangyoucao577/go-release-action@v1
+        env:
+          CGO_ENABLED: 0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.os }}
           goarch: ${{ matrix.arch }}
-          multi_binaries: true
+          goversion: ./go.mod
+          project_path: ${{ matrix.tool.path }}
+          binary_name: ${{ matrix.tool.name }}
           overwrite: true
-          project_path: ./...
           sha256sum: true

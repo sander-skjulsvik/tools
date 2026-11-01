@@ -1,8 +1,13 @@
 module github.com/sander-skjulsvik/tools
 
-go 1.24
+go 1.27.3
 
-require github.com/gosuri/uiprogress v0.0.1
+require (
+	github.com/cloudflare/cloudflare-go/v4 v4.0.0
+	github.com/deckarep/golang-set/v2 v2.6.0
+	github.com/gosuri/uiprogress v0.0.1
+	gotest.tools v2.2.0+incompatible
+)
 
 require (
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -13,11 +18,5 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-)
-
-require (
-	github.com/cloudflare/cloudflare-go/v4 v4.0.0
-	github.com/deckarep/golang-set/v2 v2.6.0
 	golang.org/x/sys v0.19.0 // indirect
-	gotest.tools v2.2.0+incompatible
 )
