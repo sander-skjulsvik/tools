@@ -12,18 +12,13 @@ RUN mkdir -p /rootfs \
     | tar xz -C /rootfs ./usr/bin/jottad ./usr/bin/jotta-cli ./etc/jottad/config.ini \
     && chmod +x /rootfs/usr/bin/jottad /rootfs/usr/bin/jotta-cli
 
-# What jottad saw in the ubuntu image: CA certs, root user with /root as home,
-# os-release, an empty machine-id and writable /tmp
-RUN mkdir -p /rootfs/etc/ssl/certs /rootfs/root /rootfs/tmp /rootfs/var/lib/jottad \
-    && chmod 700 /rootfs/root \
-    && chmod 1777 /rootfs/tmp \
-    && cp /etc/ssl/certs/ca-certificates.crt /rootfs/etc/ssl/certs/ \
-    && cp /usr/lib/os-release /rootfs/etc/os-release \
-    && touch /rootfs/etc/machine-id \
-    && echo 'root:x:0:0:root:/root:/sbin/nologin' > /rootfs/etc/passwd \
-    && echo 'root:x:0:' > /rootfs/etc/group
-
-FROM scratch
+# Not scratch: jottad shells out to coreutils `stat -f --format="%T %i" <path>`
+# to get the filesystem type and id of every backup root. Without it every
+# scan fails with "Unable to get filesystemid for path".
+FROM ubuntu:24.04
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=download /rootfs/ /
 
 # jottad stores config and state at /var/lib/jottad
