@@ -1,4 +1,6 @@
-FROM docker.io/library/golang:1.24 AS build
+# Keep in sync with go.mod; CI and the Makefile pass it with --build-arg GO_VERSION=...
+ARG GO_VERSION=1.27.3
+FROM docker.io/library/golang:${GO_VERSION} AS build
 WORKDIR /app
 # Copy dependencies first for better caching
 COPY go.mod go.sum ./

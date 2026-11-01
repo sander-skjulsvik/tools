@@ -27,12 +27,14 @@ jobs:
           VERSION=$(date +'%Y%m%d%H%M%S')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/ddnscloudflare" >> $GITHUB_ENV
+          echo "GO_VERSION=$(grep -m1 '^go ' go.mod | cut -d' ' -f2)" >> $GITHUB_ENV
 
       - name: Build and Push the Image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: containerfiles/ddnsCloudflare.containerfile
+          build-args: GO_VERSION=${{ env.GO_VERSION }}
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
