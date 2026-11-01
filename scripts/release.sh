@@ -12,6 +12,17 @@ version=${2:-}
 latest=$(gh api 'repos/{owner}/{repo}/tags' --paginate -q '.[].name' \
 	| grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
 
+# gh release create tags the default branch on GitHub, so compare against that
+if [ -n "$latest" ]; then
+	branch=$(gh api 'repos/{owner}/{repo}' -q .default_branch)
+	head=$(gh api "repos/{owner}/{repo}/commits/$branch" -q .sha)
+	released=$(gh api "repos/{owner}/{repo}/commits/$latest" -q .sha)
+	if [ "$head" = "$released" ]; then
+		echo "$branch is already released as $latest, nothing new to release" >&2
+		exit 1
+	fi
+fi
+
 if [ -z "$version" ]; then
 	if [ -z "$latest" ]; then
 		version=v0.1.0
