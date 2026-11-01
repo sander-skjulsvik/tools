@@ -49,18 +49,31 @@ func (dc *DnsClient) Info() {
 }
 
 // GetDomainValue returns the IP the A record currently points to.
+//
+// The response body is decoded into our own struct: the SDK's (v4.0.0)
+// RecordResponse union leaves Content empty for A records.
 func (dc *DnsClient) GetDomainValue() (netip.Addr, error) {
-	res, err := dc.DNSService.Records.Get(
+	var body struct {
+		Result struct {
+			Type    string `json:"type"`
+			Content string `json:"content"`
+		} `json:"result"`
+	}
+	_, err := dc.DNSService.Records.Get(
 		context.TODO(),
 		dc.dnsRecordID,
 		dns.RecordGetParams{ZoneID: cloudflare.F(dc.zoneID)},
+		option.WithResponseBodyInto(&body),
 	)
 	if err != nil {
 		return netip.Addr{}, fmt.Errorf("failed to get record %s: %w", dc.dnsRecordID, err)
 	}
-	ip, err := netip.ParseAddr(res.Content)
+	if body.Result.Type != "A" {
+		return netip.Addr{}, fmt.Errorf("record %s is type %q, want A", dc.dnsRecordID, body.Result.Type)
+	}
+	ip, err := netip.ParseAddr(body.Result.Content)
 	if err != nil {
-		return netip.Addr{}, fmt.Errorf("record %s has non-IP content %q: %w", dc.dnsRecordID, res.Content, err)
+		return netip.Addr{}, fmt.Errorf("record %s has non-IP content %q: %w", dc.dnsRecordID, body.Result.Content, err)
 	}
 	return ip, nil
 }
