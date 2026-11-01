@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"net/netip"
 	"time"
@@ -16,7 +15,6 @@ import (
 type config struct {
 	dnsProviderClient DNSProviderClient
 	Domain            string
-	DnsResolver       func(string) (netip.Addr, error) // For checking if the current dns ip is equal to current ip
 	PublicIPResolver  func() (netip.Addr, error)
 }
 
@@ -25,7 +23,6 @@ func NewDefaultCloudflareConfig(token, ZoneID, dnsRecordID, domain string) confi
 		dnsProviderClient: cloudflare.New(token, ZoneID, dnsRecordID),
 		Domain:            domain,
 		PublicIPResolver:  getPublicFromIPIFY,
-		DnsResolver:       resolveDNS,
 	}
 }
 
@@ -40,10 +37,12 @@ func Run(conf config) {
 			return
 		}
 
-		// Check pub ip if it differs from current
-		currentDNSIP, err := conf.DnsResolver(conf.Domain)
+		// Compare with the record at the provider, not with a DNS lookup: the
+		// local resolver may answer split-horizon (the LAN IP), which never
+		// matches the public IP and would rewrite the record on every tick.
+		currentDNSIP, err := conf.dnsProviderClient.GetDomainValue()
 		if err != nil {
-			slog.Error("failed to lookup domain", "domain", conf.Domain, "err", err)
+			slog.Error("failed to get dns record", "domain", conf.Domain, "err", err)
 			return
 		}
 
@@ -64,6 +63,7 @@ func Run(conf config) {
 
 type DNSProviderClient interface {
 	Info()
+	GetDomainValue() (netip.Addr, error)
 	SetDomainValue(ip string) error
 }
 
@@ -94,23 +94,4 @@ func getPublicFromIPIFY() (netip.Addr, error) {
 		return netip.Addr{}, fmt.Errorf("failed to parse ip: %s", err)
 	}
 	return netip.ParseAddr(r.Ip)
-}
-
-func resolveDNS(domain string) (netip.Addr, error) {
-	res, err := net.LookupIP(domain)
-	if err != nil {
-		return netip.Addr{}, err
-	}
-	ips := []string{}
-	for _, ip := range res {
-		ips = append(ips, ip.String())
-	}
-
-	if len(ips) == 0 {
-		return netip.Addr{}, fmt.Errorf("domain did not resolve any ip addresses, setting one")
-	}
-	if len(ips) > 1 {
-		return netip.Addr{}, fmt.Errorf("multiple ip addresses found for domain: %s", domain)
-	}
-	return netip.ParseAddr(ips[0])
 }

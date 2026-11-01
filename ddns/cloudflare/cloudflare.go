@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/netip"
 	"time"
 
 	"github.com/cloudflare/cloudflare-go/v4"
@@ -45,6 +46,23 @@ func (dc *DnsClient) Info() {
 	}
 
 	fmt.Printf("%s", res.JSON.RawJSON())
+}
+
+// GetDomainValue returns the IP the A record currently points to.
+func (dc *DnsClient) GetDomainValue() (netip.Addr, error) {
+	res, err := dc.DNSService.Records.Get(
+		context.TODO(),
+		dc.dnsRecordID,
+		dns.RecordGetParams{ZoneID: cloudflare.F(dc.zoneID)},
+	)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("failed to get record %s: %w", dc.dnsRecordID, err)
+	}
+	ip, err := netip.ParseAddr(res.Content)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("record %s has non-IP content %q: %w", dc.dnsRecordID, res.Content, err)
+	}
+	return ip, nil
 }
 
 func (dc *DnsClient) SetDomainValue(value string) error {
