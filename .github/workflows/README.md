@@ -2,7 +2,7 @@
 
 ## go-release
 
-This runs on release created, and uploads a separate archive per tool and target (`<tool>-<tag>-<os>-<arch>`, `.zip` for windows, `.tar.gz` otherwise) with a `.sha256` file. Targets are `linux`, `windows`, `darwin` and `freebsd` on `amd64`, `arm64` and `arm` (ARMv7), except `windows/arm` and `darwin/arm`. Go is the version in `go.mod`. To release a new tool, add it to the `tool` matrix.
+This runs on release created, and uploads a separate archive per tool and target (`<tool>-<tag>-<os>-<arch>`, `.zip` for windows, `.tar.gz` otherwise) and a single `checksums.txt` with the SHA-256 of every archive (`sha256sum -c --ignore-missing checksums.txt`). Targets are `linux`, `windows`, `darwin` and `freebsd` on `amd64`, `arm64` and `arm` (ARMv7), except `windows/arm` and `darwin/arm`. Go is the version in `go.mod`. To release a new tool, add it to the `tool` matrix.
 
 ## podman-release
 

@@ -47,4 +47,23 @@ jobs:
           project_path: ${{ matrix.tool.path }}
           binary_name: ${{ matrix.tool.name }}
           overwrite: true
-          sha256sum: true
+          md5sum: false
+
+  # One checksums.txt for all archives, verify with: sha256sum -c --ignore-missing checksums.txt
+  checksums:
+    name: checksums.txt
+    needs: releases
+    # Still list the archives that did build if a target failed
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Generate and upload checksums.txt
+        run: |
+          mkdir dist && cd dist
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*.tar.gz' -p '*.zip'
+          sha256sum * > checksums.txt
+          cat checksums.txt
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" --clobber checksums.txt

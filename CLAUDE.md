@@ -47,6 +47,6 @@ Windows-specific build/test targets are `make win-build` and `make win-test`.
 
 ### Releases
 
-On GitHub release creation, CI (`.github/workflows/go-release.yaml`) builds every tool for `linux/windows/darwin/freebsd` × `amd64/arm64/arm` (minus `windows/arm` and `darwin/arm`) and uploads one archive per tool and target as release assets. New tools must be added to its matrix.
+On GitHub release creation, CI (`.github/workflows/go-release.yaml`) builds every tool for `linux/windows/darwin/freebsd` × `amd64/arm64/arm` (minus `windows/arm` and `darwin/arm`) and uploads one archive per tool and target as release assets, plus a `checksums.txt` covering all of them. New tools must be added to its matrix.
 
 The Go version comes from `go.mod` everywhere: the release and test workflows read it directly, and container builds get it as the `GO_VERSION` build arg. A container image for `ddnsCloudflare` is also built from `containerfiles/ddnsCloudflare.containerfile`.
