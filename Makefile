@@ -39,3 +39,9 @@ ddns-cloudflare-docker-image:
 
 test-release:
 	gh release create test-$(DATE) --notes "This is a test release $(DATE)"
+
+# Usage: make release VERSION=v1.0.0
+.PHONY: release
+release:
+	@test -n "$(VERSION)" || { echo "usage: make release VERSION=v1.0.0" >&2; exit 1; }
+	gh release create $(VERSION) --generate-notes
