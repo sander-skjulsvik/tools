@@ -39,6 +39,8 @@ Windows-specific build/test targets are `make win-build` and `make win-test`.
 - `ddns/cloudflare/` — Cloudflare implementation of `DNSProviderClient` using `cloudflare-go/v4`
 - `ddns/runtimes/ddnsCloudflare/` — `main` package; reads credentials from env vars `TOKEN`, `ZONE_ID`, `DNS_RECORD_ID`, `DOMAIN`
 
+**`immich-picker/`** — CLI that builds a local catalog of one person's photos in Immich and shortlists them. It must stay read-only towards Immich: every request has to be listed in `allowedRequests` in `immich.go`, and the tool is not allowed to add write requests there without explicit review.
+
 ### Shared Libraries (`libs/`)
 
 - `libs/files/` — filesystem helpers (walk, file count, directory size)

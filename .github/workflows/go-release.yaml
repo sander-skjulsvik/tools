@@ -23,6 +23,7 @@ jobs:
           - { name: fileDupesAll, path: ./dupesCompareDirs/cli/fileDupesAll }
           - { name: fileDupesInBoth, path: ./dupesCompareDirs/cli/fileDupesInBoth }
           - { name: fileDupesInFirst, path: ./dupesCompareDirs/cli/fileDupesInFirst }
+          - { name: immich-picker, path: ./immich-picker }
           - { name: isodate-nest, path: ./isodate-nest }
           - { name: publicip, path: ./publicip }
           - { name: tls-check, path: ./tls-check }

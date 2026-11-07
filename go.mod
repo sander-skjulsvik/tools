@@ -6,6 +6,7 @@ require (
 	github.com/cloudflare/cloudflare-go/v4 v4.0.0
 	github.com/deckarep/golang-set/v2 v2.6.0
 	github.com/gosuri/uiprogress v0.0.1
+	golang.org/x/image v0.47.0
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -18,5 +19,5 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 )

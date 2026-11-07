@@ -10,6 +10,7 @@
 [Github Actions](.github/workflows/README.md)
 [DDNS](ddns/README.md)
 [finn-search](finn-search/README.md)
+[immich-picker](immich-picker/README.md)
 [publicip](publicip/README.md)
 [tls-check](tls-check/README.md)
 
@@ -25,6 +26,12 @@
 Scrapes Finn.no Torget search results to JSON. Supports pagination, full item detail fetching (description, condition, category), and a debug mode. Run with `uv` — no install needed.
 
 See [finn-search/README.md](finn-search/README.md).
+
+### immich-picker
+
+Builds a local catalog of the photos of one person in Immich and shortlists the good ones, using face size, sharpness and near-duplicate checks. Read-only towards Immich.
+
+See [immich-picker/README.md](immich-picker/README.md).
 
 ### publicip
 

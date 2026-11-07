@@ -1,6 +1,10 @@
 actions:
 	act
 
+.PHONY: immich-picker
+immich-picker:
+	go build -o bin/immich-picker ./immich-picker/
+
 .PHONY: isodate-nest
 isodate-nest:
 	go build -o bin/isodate-nest ./isodate-nest/
