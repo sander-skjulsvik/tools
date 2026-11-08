@@ -5,6 +5,10 @@ actions:
 immich-picker:
 	go build -o bin/immich-picker ./immich-picker/
 
+.PHONY: location-timeline
+location-timeline:
+	go build -o bin/location-timeline ./location-timeline/
+
 .PHONY: isodate-nest
 isodate-nest:
 	go build -o bin/isodate-nest ./isodate-nest/
