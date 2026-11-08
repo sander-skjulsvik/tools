@@ -171,6 +171,8 @@ type immichSource struct {
 	config  *ImmichConfig
 }
 
+var _ Source = immichSource{}
+
 func (s immichSource) Name() string { return "immich" }
 
 func (s immichSource) Points() ([]Point, error) {

@@ -397,6 +397,8 @@ type fakeSource struct {
 	points []Point
 }
 
+var _ Source = fakeSource{}
+
 func (s fakeSource) Name() string             { return s.name }
 func (s fakeSource) Points() ([]Point, error) { return s.points, nil }
 
