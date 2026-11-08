@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+This repository is public. Follow the rules on personal data in @AGENTS.md before every commit and pull request.
+
 ## Overview
 
 This is a Go monorepo (module: `github.com/sander-skjulsvik/tools`) containing CLI utilities and a DDNS service. All tools share the same `go.mod` at the repo root.
