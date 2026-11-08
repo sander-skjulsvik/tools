@@ -350,7 +350,7 @@ func Collect(client *Client, catalog *Catalog, options CollectOptions) error {
 	err = writeJSON(filepath.Join(catalog.root, "run.json"), Run{
 		SchemaVersion: schemaVersion,
 		CollectedAt:   nowUTC(),
-		ImmichURL:     client.base.String(),
+		ImmichURL:     client.BaseURL(),
 		PersonID:      personID,
 		PersonName:    personName,
 		Since:         options.Since.Format("2006-01-02"),

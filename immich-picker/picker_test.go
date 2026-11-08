@@ -19,6 +19,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/sander-skjulsvik/tools/libs/immich"
 )
 
 const (
@@ -201,84 +203,13 @@ func TestWritesAndUnlistedRequestsNeverLeaveTheClient(t *testing.T) {
 		{http.MethodGet, "/api/assets/" + me + "/original"},
 		{http.MethodGet, "/api/assets/" + me + "/../../tags"},
 	} {
-		_, _, err := client.do(request.method, request.path, nil, nil)
-		if !errors.Is(err, ErrForbiddenRequest) {
+		_, _, err := client.Do(request.method, request.path, nil, nil)
+		if !errors.Is(err, immich.ErrForbiddenRequest) {
 			t.Errorf("%s %s: got %v, want ErrForbiddenRequest", request.method, request.path, err)
 		}
 	}
 	if len(fake.calls) != 0 {
 		t.Errorf("requests reached the server: %v", fake.calls)
-	}
-}
-
-func TestRedirectIsNotFollowedSoTheKeyStaysHome(t *testing.T) {
-	reached := false
-	elsewhere := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { reached = true }))
-	defer elsewhere.Close()
-	redirecting := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, elsewhere.URL+r.URL.Path, http.StatusFound)
-	}))
-	defer redirecting.Close()
-
-	client, err := NewClient(redirecting.URL, "key")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := client.GetAsset(me); err == nil {
-		t.Error("expected an error for a redirect")
-	}
-	if reached {
-		t.Error("the redirect was followed")
-	}
-}
-
-func TestServerErrorsAreRetried(t *testing.T) {
-	attempts := 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		attempts++
-		if attempts == 1 {
-			w.WriteHeader(http.StatusBadGateway)
-			return
-		}
-		w.Write([]byte(`{"id":"x"}`))
-	}))
-	defer server.Close()
-	client, err := NewClient(server.URL, "key")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := client.GetAsset(me); err != nil {
-		t.Errorf("got %v after retry", err)
-	}
-	if attempts != 2 {
-		t.Errorf("got %d attempts, want 2", attempts)
-	}
-}
-
-func TestRejectedKeyExplainsItself(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusForbidden)
-	}))
-	defer server.Close()
-	client, err := NewClient(server.URL, "secret-key")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = client.GetAsset(me)
-	if err == nil || !strings.Contains(err.Error(), "permissions") {
-		t.Errorf("got %v", err)
-	}
-	if strings.Contains(err.Error(), "secret-key") {
-		t.Error("error contains the key")
-	}
-}
-
-func TestNewClientRejectsLinksWithPaths(t *testing.T) {
-	if _, err := NewClient("https://photos.example.com/people/"+me, "key"); err == nil {
-		t.Error("expected an error")
-	}
-	if _, err := NewClient("https://photos.example.com/", "key"); err != nil {
-		t.Error(err)
 	}
 }
 
@@ -943,23 +874,5 @@ func TestImportLabelsRejectsWholeFileOnAnyError(t *testing.T) {
 	}
 	if !record.LLM.EditNeeded || record.LLM.EditNotes == "" {
 		t.Errorf("editing note was lost: %+v", record.LLM)
-	}
-}
-
-func TestReadAPIKeyPrefersEnvironmentThenFile(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("IMMICH_API_KEY", "")
-	if _, err := readAPIKey(dir); err == nil {
-		t.Error("expected an error with no key")
-	}
-	if err := os.WriteFile(filepath.Join(dir, "api-key"), []byte("from-file\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if key, err := readAPIKey(dir); err != nil || key != "from-file" {
-		t.Errorf("got %q, %v", key, err)
-	}
-	t.Setenv("IMMICH_API_KEY", "from-env")
-	if key, err := readAPIKey(dir); err != nil || key != "from-env" {
-		t.Errorf("got %q, %v", key, err)
 	}
 }
