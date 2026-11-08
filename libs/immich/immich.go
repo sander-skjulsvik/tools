@@ -59,6 +59,8 @@ type guardTransport struct {
 	next  http.RoundTripper
 }
 
+var _ http.RoundTripper = guardTransport{}
+
 func (t guardTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	if r.URL.Host != t.host || !allowed(t.rules, r.Method, r.URL.Path) {
 		return nil, fmt.Errorf("%w: %s %s%s", ErrForbiddenRequest, r.Method, r.URL.Host, r.URL.Path)
