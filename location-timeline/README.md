@@ -19,7 +19,7 @@ echo $key > ~/.local/share/location-timeline/api-key
 set -e key
 ```
 
-Set the server with `IMMICH_URL` or `-url`. Use the server's root URL, without a path.
+Set the server with `IMMICH_URL` or `-url`: its root URL, without a path, such as `https://immich.example.org:2283`. It must use https so the API key is never sent in plain text; http works only for localhost.
 
 Then fetch your photos' locations, and list the cameras in them:
 

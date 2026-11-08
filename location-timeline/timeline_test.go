@@ -440,3 +440,21 @@ func TestConfigNeedsASourceAndRefusesTheFlatFormat(t *testing.T) {
 		t.Errorf("got %+v, %v", config, err)
 	}
 }
+
+func TestReadAPIKeyPrefersEnvironmentThenFile(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("IMMICH_API_KEY", "")
+	if _, err := readAPIKey(dir); err == nil {
+		t.Error("expected an error with no key")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "api-key"), []byte("from-file\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if key, err := readAPIKey(dir); err != nil || key != "from-file" {
+		t.Errorf("got %q, %v", key, err)
+	}
+	t.Setenv("IMMICH_API_KEY", "from-env")
+	if key, err := readAPIKey(dir); err != nil || key != "from-env" {
+		t.Errorf("got %q, %v", key, err)
+	}
+}

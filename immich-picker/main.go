@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
-
-	"github.com/sander-skjulsvik/tools/libs/immich"
 )
 
 const usage = `usage: immich-picker [-data-dir DIR] [-url URL] <command> [flags]
@@ -35,11 +35,37 @@ func defaultDataDir() string {
 	return filepath.Join(home, ".local", "share", "immich-picker")
 }
 
+// readAPIKey returns IMMICH_API_KEY, or else the file api-key in the data folder.
+// The key lives next to the data rather than in a config folder, because config
+// folders are often kept in git.
+func readAPIKey(dataDir string) (string, error) {
+	if key := strings.TrimSpace(os.Getenv("IMMICH_API_KEY")); key != "" {
+		return key, nil
+	}
+	path := filepath.Join(dataDir, "api-key")
+	info, err := os.Stat(path)
+	if err != nil {
+		return "", fmt.Errorf("no API key: set IMMICH_API_KEY or create %s", path)
+	}
+	if runtime.GOOS != "windows" && info.Mode().Perm()&0o077 != 0 {
+		fmt.Fprintf(os.Stderr, "warning: other users can read %s; run chmod 600 on it\n", path)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	key := strings.TrimSpace(string(data))
+	if key == "" {
+		return "", fmt.Errorf("%s is empty", path)
+	}
+	return key, nil
+}
+
 func connect(serverURL, dataDir string) (*Client, error) {
 	if serverURL == "" {
 		return nil, fmt.Errorf("no server: pass -url or set IMMICH_URL")
 	}
-	key, err := immich.ReadAPIKey(dataDir)
+	key, err := readAPIKey(dataDir)
 	if err != nil {
 		return nil, err
 	}

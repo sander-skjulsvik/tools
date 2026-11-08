@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -94,12 +92,28 @@ func TestRejectedKeyExplainsItself(t *testing.T) {
 	}
 }
 
-func TestNewClientRejectsLinksWithPaths(t *testing.T) {
-	if _, err := NewClient("https://photos.example.com/people/"+id, "key", rules); err == nil {
-		t.Error("expected an error")
+func TestNewClientAcceptsOnlyARootHTTPSURL(t *testing.T) {
+	for _, good := range []string{
+		"https://immich.example.org", "https://immich.example.org/", "https://192.168.1.20:2283",
+		"https://photos.home", "http://localhost:2283", "http://127.0.0.1:2283", "http://[::1]:2283",
+	} {
+		if _, err := NewClient(good, "key", rules); err != nil {
+			t.Errorf("%s: %v", good, err)
+		}
 	}
-	if _, err := NewClient("https://photos.example.com/", "key", rules); err != nil {
-		t.Error(err)
+	for _, bad := range []string{
+		"http://immich.example.org", "http://192.168.1.20:2283", "immich.example.org", "ftp://immich.example.org",
+		"https://immich.example.org/people/" + id, "https://immich.example.org?x=1", "https://user:pw@immich.example.org", "https://",
+	} {
+		_, err := NewClient(bad, "key", rules)
+		if err == nil {
+			t.Errorf("%s: expected an error", bad)
+		} else if strings.Contains(err.Error(), "photos") {
+			t.Errorf("%s: the error suggests a host name: %v", bad, err)
+		}
+	}
+	if _, err := NewClient("https://immich.example.org", " ", rules); err == nil {
+		t.Error("an empty key was accepted")
 	}
 }
 
@@ -133,20 +147,29 @@ func TestSearchMetadataFollowsPagesAndKeepsTheBody(t *testing.T) {
 	}
 }
 
-func TestReadAPIKeyPrefersEnvironmentThenFile(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("IMMICH_API_KEY", "")
-	if _, err := ReadAPIKey(dir); err == nil {
-		t.Error("expected an error with no key")
-	}
-	if err := os.WriteFile(filepath.Join(dir, "api-key"), []byte("from-file\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if key, err := ReadAPIKey(dir); err != nil || key != "from-file" {
-		t.Errorf("got %q, %v", key, err)
-	}
-	t.Setenv("IMMICH_API_KEY", "from-env")
-	if key, err := ReadAPIKey(dir); err != nil || key != "from-env" {
-		t.Errorf("got %q, %v", key, err)
+func TestSearchMetadataAlwaysEnds(t *testing.T) {
+	for name, next := range map[string]func(page int) string{
+		"same page":    func(page int) string { return strconv.Itoa(page) },
+		"earlier page": func(page int) string { return "1" },
+		"not a number": func(page int) string { return "next" },
+		"endless":      func(page int) string { return strconv.Itoa(page + 1) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer func(old int) { maxPages = old }(maxPages)
+			maxPages = 5
+			requests := 0
+			client := newClient(t, func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				var body struct{ Page int }
+				json.NewDecoder(r.Body).Decode(&body)
+				json.NewEncoder(w).Encode(map[string]any{"assets": map[string]any{"items": []any{}, "nextPage": next(body.Page)}})
+			})
+			if err := client.SearchMetadata(map[string]any{}, func([]json.RawMessage) error { return nil }); err == nil {
+				t.Error("expected an error")
+			}
+			if requests > maxPages {
+				t.Errorf("made %d requests, more than %d pages", requests, maxPages)
+			}
+		})
 	}
 }
