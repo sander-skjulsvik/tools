@@ -10,6 +10,7 @@
 [Github Actions](.github/workflows/README.md)
 [DDNS](ddns/README.md)
 [finn-search](finn-search/README.md)
+[freecad-sheet](freecad-sheet/README.md)
 [immich-picker](immich-picker/README.md)
 [publicip](publicip/README.md)
 [tls-check](tls-check/README.md)
