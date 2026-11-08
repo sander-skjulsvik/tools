@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -162,4 +163,83 @@ func LoadImmich(dataDir string) (*ImmichData, error) {
 		return nil, fmt.Errorf("decoding %s: %w", path, err)
 	}
 	return &data, nil
+}
+
+// immichSource reads the photos saved by SyncImmich.
+type immichSource struct {
+	dataDir string
+	config  *ImmichConfig
+}
+
+func (s immichSource) Name() string { return "immich" }
+
+func (s immichSource) Points() ([]Point, error) {
+	data, err := LoadImmich(s.dataDir)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.config.checkPeople(data.Photos); err != nil {
+		return nil, err
+	}
+	return immichPoints(data.Photos, s.config), nil
+}
+
+func immichPoints(photos []Photo, config *ImmichConfig) []Point {
+	points := []Point{}
+	for _, photo := range photos {
+		var evidence []string
+		if config.OwnCamera(photo.Make, photo.Model) {
+			evidence = append(evidence, "camera")
+		}
+		if config.Includes(photo.People) {
+			evidence = append(evidence, "person")
+		}
+		if len(evidence) == 0 {
+			continue
+		}
+		points = append(points, Point{
+			Source: "immich", ID: photo.ID, Time: photo.Taken, LocalTime: photo.LocalTime,
+			Latitude: photo.Latitude, Longitude: photo.Longitude,
+			City: photo.City, State: photo.State, Country: photo.Country,
+			Evidence: evidence,
+		})
+	}
+	slices.SortStableFunc(points, func(a, b Point) int { return a.Time.Compare(b.Time) })
+	return points
+}
+
+// CameraCount is how many geotagged photos one camera took.
+type CameraCount struct {
+	Make   string `json:"make"`
+	Model  string `json:"model"`
+	Photos int    `json:"photos"`
+	First  string `json:"first"`
+	Last   string `json:"last"`
+	Yours  bool   `json:"yours"`
+}
+
+// Cameras lists the cameras of geotagged photos, most photos first. The config
+// may be nil, since listing cameras is how it gets written.
+func Cameras(photos []Photo, config *ImmichConfig) []CameraCount {
+	byCamera := map[[2]string]*CameraCount{}
+	for _, photo := range photos {
+		key := [2]string{photo.Make, photo.Model}
+		date := photo.LocalTime[:len(dateLayout)]
+		count, ok := byCamera[key]
+		if !ok {
+			count = &CameraCount{Make: photo.Make, Model: photo.Model, First: date, Last: date,
+				Yours: config.OwnCamera(photo.Make, photo.Model)}
+			byCamera[key] = count
+		}
+		count.Photos++
+		count.First, count.Last = min(count.First, date), max(count.Last, date)
+	}
+	cameras := []CameraCount{}
+	for _, count := range byCamera {
+		cameras = append(cameras, *count)
+	}
+	slices.SortFunc(cameras, func(a, b CameraCount) int {
+		return cmp.Or(cmp.Compare(b.Photos, a.Photos), cmp.Compare(a.Make, b.Make), cmp.Compare(a.Model, b.Model))
+	})
+	return cameras
 }

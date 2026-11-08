@@ -15,25 +15,33 @@ import (
 const configFile = "config.json"
 
 const exampleConfig = `{
-  "cameras": [
-    {"make": "Apple", "model": "iPhone 15 Pro"},
-    {"make": "FUJIFILM"}
-  ],
-  "people": ["Your Name"]
+  "immich": {
+    "cameras": [
+      {"make": "Apple", "model": "iPhone 15 Pro"},
+      {"make": "FUJIFILM"}
+    ],
+    "people": ["Your Name"]
+  }
 }`
+
+// Config has one section per source. Only the sources it lists are used.
+type Config struct {
+	Immich *ImmichConfig `json:"immich,omitempty"`
+}
+
+// ImmichConfig decides which photos show where you were: those taken with one
+// of your cameras, and those you are in. Other photos, such as forwarded ones,
+// are ignored.
+type ImmichConfig struct {
+	Cameras []Camera `json:"cameras"`
+	// People are names or Immich IDs of you; one person usually.
+	People []string `json:"people"`
+}
 
 // Camera is one of your own cameras. An empty model matches every model of the make.
 type Camera struct {
 	Make  string `json:"make"`
 	Model string `json:"model,omitempty"`
-}
-
-// Config decides which photos show where you were: those taken with one of your
-// cameras, and those you are in. Other photos, such as forwarded ones, are ignored.
-type Config struct {
-	Cameras []Camera `json:"cameras"`
-	// People are names or Immich IDs of you; one person usually.
-	People []string `json:"people"`
 }
 
 // LoadConfig reads config.json from the data folder.
@@ -50,17 +58,27 @@ func LoadConfig(dataDir string) (Config, error) {
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&config); err != nil {
-		return Config{}, fmt.Errorf("decoding %s: %w", path, err)
+		return Config{}, fmt.Errorf("decoding %s: %w; it should look like this:\n%s", path, err, exampleConfig)
 	}
-	if len(config.Cameras) == 0 && len(config.People) == 0 {
-		return Config{}, fmt.Errorf("%s lists no cameras and no people, so no photo counts", path)
-	}
-	for _, camera := range config.Cameras {
-		if strings.TrimSpace(camera.Make) == "" {
-			return Config{}, fmt.Errorf("%s: every camera needs a make", path)
-		}
+	if err := config.validate(); err != nil {
+		return Config{}, fmt.Errorf("%s: %w", path, err)
 	}
 	return config, nil
+}
+
+func (c Config) validate() error {
+	if c.Immich == nil {
+		return fmt.Errorf("no source is configured; add an immich section")
+	}
+	if len(c.Immich.Cameras) == 0 && len(c.Immich.People) == 0 {
+		return fmt.Errorf("immich lists no cameras and no people, so no photo counts")
+	}
+	for _, camera := range c.Immich.Cameras {
+		if strings.TrimSpace(camera.Make) == "" {
+			return fmt.Errorf("every immich camera needs a make")
+		}
+	}
+	return nil
 }
 
 func same(a, b string) bool {
@@ -68,14 +86,17 @@ func same(a, b string) bool {
 }
 
 // OwnCamera reports whether the photo was taken with one of the configured cameras.
-func (c Config) OwnCamera(make, model string) bool {
+func (c *ImmichConfig) OwnCamera(make, model string) bool {
+	if c == nil {
+		return false
+	}
 	return slices.ContainsFunc(c.Cameras, func(camera Camera) bool {
 		return same(camera.Make, make) && (camera.Model == "" || same(camera.Model, model))
 	})
 }
 
 // Includes reports whether one of the people is a configured person.
-func (c Config) Includes(people []PersonRef) bool {
+func (c *ImmichConfig) Includes(people []PersonRef) bool {
 	for _, person := range people {
 		for _, wanted := range c.People {
 			if same(wanted, person.ID) || (person.Name != "" && same(wanted, person.Name)) {
@@ -88,7 +109,7 @@ func (c Config) Includes(people []PersonRef) bool {
 
 // checkPeople refuses a configured name shared by several people in Immich,
 // since a namesake's photos would count as yours.
-func (c Config) checkPeople(photos []Photo) error {
+func (c *ImmichConfig) checkPeople(photos []Photo) error {
 	for _, wanted := range c.People {
 		ids := map[string]bool{}
 		for _, photo := range photos {

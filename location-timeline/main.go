@@ -21,16 +21,16 @@ import (
 const usage = `usage: location-timeline [-data-dir DIR] [-url URL] <command> [flags]
 
 Commands:
-  sync       fetch the location of every geotagged photo from Immich
-  cameras    list the cameras in your photos, to choose yours in config.json
-  stays      where you stayed, and the gaps with no evidence
-  days       the places seen on each day
-  countries  the countries seen in a period, such as the last 6 months
-  points     every counted photo as JSON, for other tools
+  sync immich  fetch the location of every geotagged photo from Immich
+  cameras      list the cameras in your Immich photos, to choose yours in config.json
+  stays        where you stayed, and the gaps with no evidence
+  days         the places seen on each day
+  countries    the countries seen in a period, such as the last 6 months
+  points       every counted point as JSON, for other tools
 
 Only sync uses the network. The server comes from -url or IMMICH_URL. The API key
-comes from IMMICH_API_KEY, or the file api-key in the data folder. Photos count
-when config.json in the data folder lists their camera or a person in them.
+comes from IMMICH_API_KEY, or the file api-key in the data folder. config.json in
+the data folder lists the sources to use, and which of their data counts as yours.
 Run "location-timeline <command> -h" for flags.
 `
 
@@ -112,6 +112,9 @@ func run(args []string, stdout io.Writer) error {
 	switch command {
 	case "sync":
 		flags.Parse(rest)
+		if flags.NArg() != 1 || flags.Arg(0) != "immich" {
+			return fmt.Errorf("usage: location-timeline sync immich; it is the only source with something to sync")
+		}
 		if *serverURL == "" {
 			return fmt.Errorf("no server: pass -url or set IMMICH_URL")
 		}
@@ -134,7 +137,7 @@ func run(args []string, stdout io.Writer) error {
 		}
 		// Listing cameras is how config.json gets written, so it may be missing.
 		config, _ := LoadConfig(*dataDir)
-		cameras := Cameras(data.Photos, config)
+		cameras := Cameras(data.Photos, config.Immich)
 		if *asJSON {
 			return encodeJSON(stdout, cameras)
 		}

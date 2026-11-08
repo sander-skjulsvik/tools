@@ -33,7 +33,7 @@ var (
 	madrid = place{40.42, -3.70, "Madrid", "Spain"}
 )
 
-var config = Config{Cameras: []Camera{{Make: "Apple", Model: "iPhone 15"}, {Make: "FUJIFILM"}}, People: []string{"Me"}}
+var config = &ImmichConfig{Cameras: []Camera{{Make: "Apple", Model: "iPhone 15"}, {Make: "FUJIFILM"}}, People: []string{"Me"}}
 
 // photo is taken at a UTC time given as 2006-01-02T15:04, in a UTC+1 place.
 func photo(t *testing.T, at string, where place, make, model string, people ...PersonRef) Photo {
@@ -76,7 +76,7 @@ func TestOnlyOwnCamerasAndOwnFaceCount(t *testing.T) {
 }
 
 func TestPeopleMatchByIDToo(t *testing.T) {
-	byID := Config{People: []string{me}}
+	byID := &ImmichConfig{People: []string{me}}
 	if len(immichPoints([]Photo{photo(t, "2025-01-01T10:00", oslo, "", "", PersonRef{me, ""})}, byID)) != 1 {
 		t.Error("an unnamed person did not match by ID")
 	}
@@ -313,7 +313,10 @@ func TestSyncThenReport(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("IMMICH_API_KEY", "key")
-	if err := run([]string{"-data-dir", dir, "-url", server.URL, "sync"}, &bytes.Buffer{}); err != nil {
+	if err := run([]string{"-data-dir", dir, "-url", server.URL, "sync"}, &bytes.Buffer{}); err == nil {
+		t.Error("sync without a source should be refused")
+	}
+	if err := run([]string{"-data-dir", dir, "-url", server.URL, "sync", "immich"}, &bytes.Buffer{}); err != nil {
 		t.Fatal(err)
 	}
 	for _, call := range *calls {
@@ -334,7 +337,7 @@ func TestSyncThenReport(t *testing.T) {
 		t.Errorf("cameras: %v\n%s", err, out.String())
 	}
 
-	if err := writeJSON(filepath.Join(dir, configFile), Config{Cameras: []Camera{{Make: "apple"}}, People: []string{"me"}}); err != nil {
+	if err := writeJSON(filepath.Join(dir, configFile), Config{Immich: &ImmichConfig{Cameras: []Camera{{Make: "apple"}}, People: []string{"me"}}}); err != nil {
 		t.Fatal(err)
 	}
 	out.Reset()
@@ -385,5 +388,53 @@ func TestOnlyMetadataSearchIsAllowed(t *testing.T) {
 	}
 	if len(*calls) != 0 {
 		t.Errorf("requests reached the server: %v", *calls)
+	}
+}
+
+// fakeSource stands in for a second source, such as Google Timeline.
+type fakeSource struct {
+	name   string
+	points []Point
+}
+
+func (s fakeSource) Name() string             { return s.name }
+func (s fakeSource) Points() ([]Point, error) { return s.points, nil }
+
+func TestSourcesMergeInTimeOrder(t *testing.T) {
+	photos := points(t, mine(t, "2025-03-01T10:00", bergen), mine(t, "2025-03-03T10:00", bergen))
+	google := fakeSource{"google", []Point{{
+		Source: "google", ID: "g", Time: time.Date(2025, 3, 2, 10, 0, 0, 0, time.UTC), LocalTime: "2025-03-02T11:00:00",
+		Latitude: madrid.lat, Longitude: madrid.lon, City: "Madrid", Country: "Spain", AccuracyM: 20, Evidence: []string{"visit"},
+	}}}
+	merged, err := mergePoints([]Source{fakeSource{"immich", photos}, google})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := describe(Stays(merged, cityOptions()))
+	if want := "Bergen, Norway 1 | Madrid, Spain 1 | Bergen, Norway 1"; got != want {
+		t.Errorf("got %s, want %s", got, want)
+	}
+}
+
+func TestConfigNeedsASourceAndRefusesTheFlatFormat(t *testing.T) {
+	for name, body := range map[string]string{
+		"no source": `{}`,
+		"flat":      `{"cameras": [{"make": "Apple"}], "people": ["Me"]}`,
+		"empty":     `{"immich": {}}`,
+		"no make":   `{"immich": {"cameras": [{"model": "X100V"}]}}`,
+	} {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, configFile), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := LoadConfig(dir); err == nil {
+			t.Errorf("%s: expected an error", name)
+		}
+	}
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, configFile), []byte(`{"immich": {"people": ["Me"]}}`), 0o600)
+	config, err := LoadConfig(dir)
+	if err != nil || len(Sources(dir, config)) != 1 || Sources(dir, config)[0].Name() != "immich" {
+		t.Errorf("got %+v, %v", config, err)
 	}
 }

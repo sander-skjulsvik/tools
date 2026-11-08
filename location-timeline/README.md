@@ -24,21 +24,27 @@ Set the server with `IMMICH_URL` or `-url`. Use the server's root URL, without a
 Then fetch your photos' locations, and list the cameras in them:
 
 ```bash
-go run ./location-timeline sync
+go run ./location-timeline sync immich
 go run ./location-timeline cameras
 ```
 
-## Which photos count
+## Sources and config
 
-Not every geotagged photo in your library shows where you were: forwarded and shared photos carry someone else's location. A photo counts only if it was taken with one of your cameras, or if you are in it. Both are set in `config.json` in the data folder:
+`config.json` in the data folder has one section per source, and only the sources it lists are used. Their points are merged in time order before any report. Immich is the only source so far; Google location history is planned.
+
+### Immich: which photos count
+
+Not every geotagged photo in your library shows where you were: forwarded and shared photos carry someone else's location. A photo counts only if it was taken with one of your cameras, or if you are in it:
 
 ```json
 {
-  "cameras": [
-    {"make": "Apple", "model": "iPhone 15 Pro"},
-    {"make": "FUJIFILM"}
-  ],
-  "people": ["Your Name"]
+  "immich": {
+    "cameras": [
+      {"make": "Apple", "model": "iPhone 15 Pro"},
+      {"make": "FUJIFILM"}
+    ],
+    "people": ["Your Name"]
+  }
 }
 ```
 
@@ -59,12 +65,12 @@ go run ./location-timeline points -since 30d > points.json
 
 | Command | What it does |
 |---------|--------------|
-| `sync` | Fetches the location, time, camera and people of every geotagged photo. The only command using the network |
-| `cameras` | Lists the cameras in your geotagged photos and which ones the config counts as yours |
+| `sync immich` | Fetches the location, time, camera and people of every geotagged photo. The only command using the network |
+| `cameras` | Lists the cameras in your geotagged Immich photos and which ones the config counts as yours |
 | `stays` | Groups photos into stays in one place, with the gaps between them |
 | `days` | Lists the places seen on each day, in order |
 | `countries` | Lists the countries seen in a period, with how many days have photos at all |
-| `points` | Prints every counted photo as JSON, for other tools |
+| `points` | Prints every counted point as JSON, for other tools |
 
 Dates take `YYYY-MM-DD` or a time ago: `30d`, `6w`, `6m`, `1y`. `-on` is a single day. Every command but `points` prints a table, or JSON with `-json`.
 
@@ -76,7 +82,11 @@ Dates are local to where the photo was taken, so a photo at 00:30 in Tokyo is on
 
 ## Using the output elsewhere
 
-The `-json` output and `points` are meant for other tools and skills. Every point has a `source` (only `immich` today; Google location history is planned), the time in UTC, the local time, coordinates, the place names Immich gave it, and `evidence`: `camera`, `person` or both. In `stays` output, entries are of `kind` `stay` or `gap`. A gap is unknown, not "still there".
+The `-json` output and `points` are meant for other tools and skills. Every point has a `source` (only `immich` today), the time in UTC, the local time, coordinates, place names, and `evidence`, which says why the source counted it: for Immich, `camera`, `person` or both. Sources that know how accurate a location is add `accuracy_m`; photos leave it out. In `stays` output, entries are of `kind` `stay` or `gap`. A gap is unknown, not "still there".
+
+## Adding a source
+
+A source implements `Source` in `source.go`: a name, and `Points()`, which reads what the source saved in the data folder and returns only the points its config counts. Add its config section to `Config` and list it in `Sources`. How the data gets into the data folder is up to the source, since sources differ: Immich has an API to sync from, while Google Timeline is a file exported from the phone.
 
 ## Data folder
 
@@ -84,6 +94,6 @@ Defaults to `~/.local/share/location-timeline`; change it with `-data-dir`, befo
 
 ```
 api-key       the API key, unless IMMICH_API_KEY is set
-config.json   your cameras and your name in Immich
+config.json   the sources to use, and which of their data is yours
 immich.json   every geotagged photo from the last sync
 ```
