@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/sander-skjulsvik/tools/libs/immich"
 	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 )
@@ -259,7 +260,7 @@ func Analyze(client *Client, catalog *Catalog, workers int) error {
 				mutex.Lock()
 				done++
 				switch {
-				case errors.Is(err, ErrForbiddenRequest):
+				case errors.Is(err, immich.ErrForbiddenRequest):
 					forbidden = err
 					failed++
 				case err != nil:
