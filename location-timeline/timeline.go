@@ -27,7 +27,11 @@ type Point struct {
 	City      string    `json:"city,omitempty"`
 	State     string    `json:"state,omitempty"`
 	Country   string    `json:"country,omitempty"`
-	// Evidence says why the point counts: "camera", "person" or both.
+	// AccuracyM is the radius in metres the location is accurate to, when the
+	// source knows it. Photos do not.
+	AccuracyM float64 `json:"accuracy_m,omitempty"`
+	// Evidence says why the source counted the point. Its values belong to the
+	// source: for Immich, "camera", "person" or both.
 	Evidence []string `json:"evidence"`
 }
 
@@ -52,42 +56,6 @@ func (p Point) Place() string {
 
 func (p Point) countryName() string {
 	return cmp.Or(p.Country, "Unknown country")
-}
-
-// LoadPoints returns the points from every source that pass the config, in time order.
-func LoadPoints(dataDir string, config Config) ([]Point, error) {
-	data, err := LoadImmich(dataDir)
-	if err != nil {
-		return nil, err
-	}
-	if err := config.checkPeople(data.Photos); err != nil {
-		return nil, err
-	}
-	return immichPoints(data.Photos, config), nil
-}
-
-func immichPoints(photos []Photo, config Config) []Point {
-	points := []Point{}
-	for _, photo := range photos {
-		var evidence []string
-		if config.OwnCamera(photo.Make, photo.Model) {
-			evidence = append(evidence, "camera")
-		}
-		if config.Includes(photo.People) {
-			evidence = append(evidence, "person")
-		}
-		if len(evidence) == 0 {
-			continue
-		}
-		points = append(points, Point{
-			Source: "immich", ID: photo.ID, Time: photo.Taken, LocalTime: photo.LocalTime,
-			Latitude: photo.Latitude, Longitude: photo.Longitude,
-			City: photo.City, State: photo.State, Country: photo.Country,
-			Evidence: evidence,
-		})
-	}
-	slices.SortStableFunc(points, func(a, b Point) int { return a.Time.Compare(b.Time) })
-	return points
 }
 
 // Range is an inclusive range of local dates. Empty ends are open.
@@ -418,39 +386,4 @@ func PointsInRange(points []Point, r Range) []Point {
 		}
 	}
 	return kept
-}
-
-// CameraCount is how many geotagged photos one camera took.
-type CameraCount struct {
-	Make   string `json:"make"`
-	Model  string `json:"model"`
-	Photos int    `json:"photos"`
-	First  string `json:"first"`
-	Last   string `json:"last"`
-	Yours  bool   `json:"yours"`
-}
-
-// Cameras lists the cameras of geotagged photos, most photos first.
-func Cameras(photos []Photo, config Config) []CameraCount {
-	byCamera := map[[2]string]*CameraCount{}
-	for _, photo := range photos {
-		key := [2]string{photo.Make, photo.Model}
-		date := photo.LocalTime[:len(dateLayout)]
-		count, ok := byCamera[key]
-		if !ok {
-			count = &CameraCount{Make: photo.Make, Model: photo.Model, First: date, Last: date,
-				Yours: config.OwnCamera(photo.Make, photo.Model)}
-			byCamera[key] = count
-		}
-		count.Photos++
-		count.First, count.Last = min(count.First, date), max(count.Last, date)
-	}
-	cameras := []CameraCount{}
-	for _, count := range byCamera {
-		cameras = append(cameras, *count)
-	}
-	slices.SortFunc(cameras, func(a, b CameraCount) int {
-		return cmp.Or(cmp.Compare(b.Photos, a.Photos), cmp.Compare(a.Make, b.Make), cmp.Compare(a.Model, b.Model))
-	})
-	return cameras
 }

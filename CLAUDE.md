@@ -41,7 +41,7 @@ Windows-specific build/test targets are `make win-build` and `make win-test`.
 
 **`immich-picker/`** — CLI that builds a local catalog of one person's photos in Immich and shortlists them. It must stay read-only towards Immich: every request has to be listed in `allowedRequests` in `immich.go`, and the tool is not allowed to add write requests there without explicit review.
 
-**`location-timeline/`** — CLI that works out where the user has been from the location metadata of their Immich photos: stays, days and countries per period, plus JSON for other tools. Only photos from the user's own cameras or with the user in them count (`config.json` in the data folder). Periods without photos are shown as gaps, never filled in. Immich is the first source; Google location history is planned as a second, producing the same `Point`. The same read-only rule as `immich-picker` applies to its `allowedRequests` in `immich.go`.
+**`location-timeline/`** — CLI that works out where the user has been from the location metadata of their Immich photos: stays, days and countries per period, plus JSON for other tools. Only photos from the user's own cameras or with the user in them count (`config.json` in the data folder). Periods without photos are shown as gaps, never filled in. Each data source implements `Source` in `source.go` and has its own section in the config; reports only see the merged `[]Point`. Immich is the first source; Google location history is planned as a second. The same read-only rule as `immich-picker` applies to its `allowedRequests` in `immich.go`.
 
 ### Shared Libraries (`libs/`)
 
