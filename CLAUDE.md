@@ -41,11 +41,14 @@ Windows-specific build/test targets are `make win-build` and `make win-test`.
 
 **`immich-picker/`** — CLI that builds a local catalog of one person's photos in Immich and shortlists them. It must stay read-only towards Immich: every request has to be listed in `allowedRequests` in `immich.go`, and the tool is not allowed to add write requests there without explicit review.
 
+**`location-timeline/`** — CLI that works out where the user has been from the location metadata of their Immich photos: stays, days and countries per period, plus JSON for other tools. Only photos from the user's own cameras or with the user in them count (`config.json` in the data folder). Periods without photos are shown as gaps, never filled in. Immich is the first source; Google location history is planned as a second, producing the same `Point`. The same read-only rule as `immich-picker` applies to its `allowedRequests` in `immich.go`.
+
 ### Shared Libraries (`libs/`)
 
 - `libs/files/` — filesystem helpers (walk, file count, directory size)
 - `libs/collections/` — generic collection utilities
 - `libs/progressbar/` — progress bar abstraction wrapping `gosuri/uiprogress`
+- `libs/immich/` — read-only Immich client: each tool passes the only requests it may make, and anything else is refused before it is sent. Redirects are never followed, so the API key stays on the server it was meant for
 
 ### Releases
 

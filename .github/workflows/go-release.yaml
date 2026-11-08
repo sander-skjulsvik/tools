@@ -25,6 +25,7 @@ jobs:
           - { name: fileDupesInFirst, path: ./dupesCompareDirs/cli/fileDupesInFirst }
           - { name: immich-picker, path: ./immich-picker }
           - { name: isodate-nest, path: ./isodate-nest }
+          - { name: location-timeline, path: ./location-timeline }
           - { name: publicip, path: ./publicip }
           - { name: tls-check, path: ./tls-check }
         arch: [amd64, arm64, arm]
