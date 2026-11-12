@@ -21,6 +21,13 @@ publicip:
 tls-check:
 	go build -o bin/tls-check ./tls-check/
 
+.PHONY: autodeploy autodeploy-image
+autodeploy:
+	go build -o bin/autodeploy ./autodeploy/
+
+autodeploy-image:
+	docker build -t autodeploy-$(DATE) --build-arg GO_VERSION=$$(grep -m1 '^go ' go.mod | cut -d' ' -f2) -f containerfiles/autodeploy.containerfile .
+
 .PHONY: install install-publicip install-tls-check
 install: install-publicip install-tls-check
 

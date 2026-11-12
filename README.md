@@ -8,6 +8,7 @@
 ## Readmes
 
 [Github Actions](.github/workflows/README.md)
+[autodeploy](autodeploy/README.md)
 [DDNS](ddns/README.md)
 [finn-search](finn-search/README.md)
 [immich-picker](immich-picker/README.md)
@@ -16,6 +17,12 @@
 
 
 ## Documentations
+
+### autodeploy
+
+Runs in a Kubernetes cluster and keeps one deployment on the newest `vX.Y.Z` release of its image, by polling the registry. Pull-based, with a service account that can only get and patch that one deployment.
+
+See [autodeploy/README.md](autodeploy/README.md).
 
 ### DDNS
 
