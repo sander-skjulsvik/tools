@@ -13,6 +13,10 @@ location-timeline:
 isodate-nest:
 	go build -o bin/isodate-nest ./isodate-nest/
 
+.PHONY: 5e
+5e:
+	go build -o bin/5e ./5e/
+
 .PHONY: publicip
 publicip:
 	go build -o bin/publicip ./publicip/

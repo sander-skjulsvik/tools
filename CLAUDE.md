@@ -45,6 +45,8 @@ Windows-specific build/test targets are `make win-build` and `make win-test`.
 
 **`location-timeline/`** — CLI that works out where the user has been from the location metadata of their Immich photos: stays, days and countries per period, plus JSON for other tools. Only photos from the user's own cameras or with the user in them count (`config.json` in the data folder). Periods without photos are shown as gaps, never filled in. Each data source implements `Source` in `source.go` and has its own section in the config; reports only see the merged `[]Point`. Immich is the first source; Google location history is planned as a second. The same read-only rule as `immich-picker` applies to its `allowedRequests` in `immich.go`.
 
+**`5e/`** — CLI for D&D 5e data in a local checkout of 5etools (`-data` or `FIVETOOLS_DATA`), with subcommands so other data types can follow. `5e spells` searches spells, filtered by edition (2014/2024, required), class, subclass, level, casting time, concentration, ritual and school. Class lists come from `data/generated/gendata-spell-source-lookup.json`; each spell is shown in one printing per edition (2024 takes the reprint, 2014 the original). It does not resolve `_copy` entries and stops if it meets one. `5e completion fish` prints a fish completion script; data-dependent values (classes, subclasses, books, spell names) come from the hidden `5e __complete` command, which reads the edition and class already typed.
+
 ### Shared Libraries (`libs/`)
 
 - `libs/files/` — filesystem helpers (walk, file count, directory size)
