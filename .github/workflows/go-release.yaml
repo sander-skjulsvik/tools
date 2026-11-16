@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - { name: 5e, path: ./5e }
           - { name: ddnsCloudflare, path: ./ddns/runtimes/ddnsCloudflare }
           - { name: dupes, path: ./dupes }
           - { name: dupesCompareDirs, path: ./dupesCompareDirs }
